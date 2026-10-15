@@ -12,6 +12,8 @@
 
 设计者建议：业务采用模块化单体，部署时分离 API、后台任务、GPU 推理、CPU 检索/重排。一个后端仓库维护共享契约，四项检查不拆成四套业务服务。
 
+日志规范（2026-10-15用户指定）：遵循[通用项目日志规范](../../通用项目日志规范.md)与[本项目落地约定](../../日志落地约定.md)。使用Loguru，统一入口 `backend/app/core/logging_config.py`；stdout INFO起、文件DEBUG起，中文动作/key=value字段，Asia/Shanghai每日00:00轮转、保留30天并ZIP压缩（替换旧计划14天）。API/任务/模型/检索的上下文隔离、稳定task_id、request_id传播、最终责任边界单次异常堆栈、多进程文件隔离、脱敏及1000字符外部错误上限均须验收。日志记录真实状态与耗时，不能替代MySQL结果/审计，也不能因HTTP200掩盖status=error。原文中的recognition/csrcqsf仅为来源示例，实际项目路径以上述落地约定为准。
+
 ## 2. 拟议目录
 
 位置：`/mnt/mydrive/project/medical-report-qc/backend/`。
@@ -186,6 +188,16 @@ GPU HTTP 超时不表示底层推理已经终止；同一 request ID 的重试�
 | `/system/status`、`/system/config`、`/system/preflight` | 状态、非敏感配置与运行前检查 |
 
 上传、导入解析、推理、导出都不以同步长请求阻塞浏览器。原始文件和已解析报告固定后才能启动，个别无效行保留原因。结果详情默认给必要信息，大型原始响应按需获取。
+
+### 7.1 统一响应和异常处理（2026-10-15用户修订）
+
+自有业务与内部模型/检索JSON接口，凡应用可捕获的错误统一HTTP 200，返回 `{"status":"error","data":null,"detail":{...},"request_id":"..."}`。detail提供稳定业务错误code、详细message、失败stage、retryable、异常类型exception_type、脱敏cause、remote_state和定位context；不能仅以HTTP 200判成功。包括参数验证、资源不存在、版本冲突、预检不通过和未知异常，均不得遗漏为框架默认4xx/5xx。第三方供应商仍按其真实HTTP状态分类，再转换本系统错误对象。
+
+JSON成功响应统一 `{"status":"success","data":业务DTO,"detail":null,"request_id":"..."}`；成功原有200/201/202语义保留，任务执行状态在data.status。查询到failed任务是接口查询成功；不能把外层status与任务状态混用。下载成功是实际XLSX二进制200，下载失败是JSON 200/error，前端必须识别而不是保存成xlsx。
+
+异常在能处理的边界捕获：适配器转换已知异常并用 `raise ... from exc` 保留原因；阶段执行器保存失败attempt、按原预算有限重试，耗尽后抛出；工作单元边界记录failed并继续其他工作。持久化失败本身无法记录时回滚并重新抛出交恢复机制，不能吞异常假确认。统一HTTP处理器负责将异常转换为响应，并保存可用request_id关联的脱敏堆栈与cause链。普通捕获不截获退出/协程取消控制信号，后台Future异常必须读取/记录。
+
+前端与内部HTTP客户端先验证status，error时读取detail并抛typed异常；页面展示详细原因、阶段及追踪编号。维护日志保留格式化脱敏traceback，detail不包含凭据、原始SQL或患者正文。健康探测也要读status/data.ready，CLI/任务失败继续非零退出/抛出，不能因为HTTP统一200而丢失失败语义。具体类型、错误码及测试归属见实施总计划“统一响应与异常维护约定”。
 
 ## 8. 审核边界
 
