@@ -1,0 +1,22 @@
+{
+  "passed": 15,
+  "checks": [
+    "RAG shows all 10 ranked reports",
+    "ranking order 01 through 10",
+    "full report content rendered without excerpt or clamp",
+    "each report has ID, source file and source record",
+    "query report context and demo status explicit",
+    "RAG uses report text instead of knowledge summaries",
+    "desktop drawer fits 1280",
+    "desktop drawer fits 1440",
+    "desktop drawer fits 1920",
+    "last ranked report reachable by scrolling",
+    "drawer closes and restores interaction",
+    "CGEC reference view unchanged",
+    "manual review passes the selected report context",
+    "no runtime or console errors",
+    "no external requests"
+  ],
+  "runtimeErrors": [],
+  "externalNetworkRequests": []
+}
