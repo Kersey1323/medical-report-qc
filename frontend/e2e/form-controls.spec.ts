@@ -1,0 +1,30 @@
+import {test,expect} from '@playwright/test';
+
+const columns=['序号','原样本编号','来源数据集','影像描述','影像诊断',...Array.from({length:18},(_,i)=>`附加列 ${i+1}`)];
+test('search focus and import select keyboard, clear mapping, scroll and Escape',async({page})=>{
+ await page.setViewportSize({width:1280,height:900});
+ await page.route('**/api/v1/runs?*',route=>route.fulfill({json:{status:'success',data:{items:[],total:0,page:1,page_size:20}}}));
+ await page.route('**/api/v1/imports',route=>route.fulfill({json:{status:'success',data:{id:'select-ui-test',status:'ready',filename:'列映射测试.csv',columns,preview_rows:[{original_row:2,cells:{'影像描述':'测试描述','影像诊断':'测试诊断'},errors:[]}],total_rows:1,errors:[],confirmed:false,valid_rows:1,invalid_rows:[],mapping:null,checks:null}}}));
+ await page.goto('/#batch');
+ const search=page.getByRole('textbox',{name:'搜索任务或文件'});
+ await search.focus();await expect(search).toHaveCSS('outline-style','none');
+ expect(await page.locator('.task-search').evaluate(el=>getComputedStyle(el).boxShadow)).not.toBe('none');
+ await search.fill('测试');
+ await page.getByRole('button',{name:'导入报告',exact:true}).click();
+ await page.locator('input[type=file]').setInputFiles({name:'preview.csv',mimeType:'text/csv',buffer:Buffer.from('描述,诊断\n测试,测试')});
+ const description=page.getByRole('combobox',{name:'描述列'}),diagnosis=page.getByRole('combobox',{name:'诊断列'});
+ await description.click();await expect(page.getByRole('listbox')).toBeVisible();
+ await page.keyboard.press('End');await expect(page.getByRole('option',{name:'附加列 18',exact:true})).toBeFocused();await page.keyboard.press('Enter');await expect(description).toHaveText('附加列 18');
+ await description.click();await page.keyboard.press('Escape');
+ await expect(page.getByRole('listbox')).toHaveCount(0);await expect(page.getByRole('dialog')).toBeVisible();await expect(description).toBeFocused();
+ await description.click();await page.getByRole('option',{name:'影像描述',exact:true}).click();
+ await page.keyboard.press('Tab');await expect(diagnosis).toBeFocused();
+ await page.keyboard.press('ArrowDown');await page.getByRole('option',{name:'影像诊断',exact:true}).click();
+ await expect(page.getByRole('button',{name:'确认映射并创建任务'})).toBeEnabled();
+ await diagnosis.click();await page.getByRole('option',{name:'不映射',exact:true}).click();
+ await expect(page.getByRole('button',{name:'确认映射并创建任务'})).toBeDisabled();
+ await description.click();
+ const box=await page.getByRole('listbox').boundingBox();expect(box).not.toBeNull();expect(box!.height).toBeLessThanOrEqual(300);expect(box!.y+box!.height).toBeLessThanOrEqual(900);
+ await page.getByRole('option',{name:'请选择列',exact:true}).click();await expect(description).toHaveText('请选择列');
+ await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+});

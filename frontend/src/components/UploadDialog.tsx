@@ -3,14 +3,15 @@ import {Upload,FileUp,X,RotateCcw,Check,Columns3} from 'lucide-react';
 import {uploadImport,getImport,confirmImport,createRun,startRun} from '../api';
 import type {ImportDTO,CheckKey} from '../api/types';
 import {allChecks} from '../domain/checks';
-import {CheckSelector,fieldClass} from '../pages/SingleReport';
+import {CheckSelector} from '../pages/SingleReport';
 import {Button} from './ui';
+import {Select} from './ui/Select';
 import {ErrorPanel} from './ErrorPanel';
 import {navigate} from '../hooks/useHashRoute';
 export function UploadDialog({onClose}:{onClose:()=>void}){
  const [data,setData]=useState<ImportDTO>(),[error,setError]=useState<unknown>(),[busy,setBusy]=useState(false);const [desc,setDesc]=useState(''),[diag,setDiag]=useState(''),[selected,setSelected]=useState<CheckKey[]>([...allChecks]);const input=useRef<HTMLInputElement>(null);const alive=useRef(true);
  const modal=useRef<HTMLElement>(null);const close=useRef(onClose);close.current=onClose;
- useEffect(()=>{alive.current=true;const old=document.activeElement as HTMLElement;input.current?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape')close.current();if(e.key==='Tab'){const els=Array.from(modal.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')||[]);const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}};document.addEventListener('keydown',key);return()=>{alive.current=false;document.removeEventListener('keydown',key);old?.focus()}},[]);
+ useEffect(()=>{alive.current=true;const old=document.activeElement as HTMLElement;input.current?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!e.defaultPrevented)close.current();if(e.key==='Tab'){const els=Array.from(modal.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')||[]);const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}};document.addEventListener('keydown',key);return()=>{alive.current=false;document.removeEventListener('keydown',key);old?.focus()}},[]);
  const id=data?.id;const status=data?.status;
  useEffect(()=>{if(!id||!['pending','running'].includes(status||''))return;const c=new AbortController();let timer:ReturnType<typeof setTimeout>;const poll=async()=>{try{const next=await getImport(id,c.signal);if(c.signal.aborted)return;setData(next);if(['pending','running'].includes(next.status))timer=setTimeout(poll,2000)}catch(e){if(!c.signal.aborted){setError(e);timer=setTimeout(poll,2000)}}};timer=setTimeout(poll,1000);return()=>{c.abort();clearTimeout(timer)}},[id,status]);
  const upload=async(file:File)=>{setBusy(true);setError(undefined);try{const result=await uploadImport(file);if(alive.current){setData(result);sessionStorage.setItem('medical_qc:last_import',result.id)}}catch(e){setError(e)}finally{setBusy(false)}};
@@ -31,8 +32,8 @@ export function UploadDialog({onClose}:{onClose:()=>void}){
     {data.errors.map((e,i)=><p role="alert" key={i}>{e.message}</p>)}
     {data.status==='ready'&&<>
      <div className="mapping-grid">
-      <label className="field"><span className="label">描述列 *</span><select className={fieldClass} value={desc} disabled={busy} onChange={e=>setDesc(e.target.value)}><option value="">请选择列</option>{data.columns.map(c=><option key={c}>{c}</option>)}</select></label>
-      <label className="field"><span className="label">诊断列 {selected.includes('diagnosis')&&'*'}</span><select className={fieldClass} value={diag} disabled={busy} onChange={e=>setDiag(e.target.value)}><option value="">不映射</option>{data.columns.map(c=><option key={c}>{c}</option>)}</select></label>
+      <div className="field"><label className="label" htmlFor="import-description-column">描述列 *</label><Select id="import-description-column" value={desc} disabled={busy} onChange={setDesc} options={[{value:'',label:'请选择列'},...data.columns.map(c=>({value:c,label:c}))]}/></div>
+      <div className="field"><label className="label" htmlFor="import-diagnosis-column">诊断列 {selected.includes('diagnosis')&&'*'}</label><Select id="import-diagnosis-column" value={diag} disabled={busy} onChange={setDiag} options={[{value:'',label:'不映射'},...data.columns.map(c=>({value:c,label:c}))]}/></div>
      </div>
      <div className="import-preview-heading"><h3>数据预览</h3><span className="small muted">共 {data.total_rows} 行 · 预览前 {previewRows.length} 行，长文本仅显示摘要</span></div>
      <div className="table-scroll import-preview" tabIndex={0} role="region" aria-label="导入数据预览">
