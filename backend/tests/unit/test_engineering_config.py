@@ -9,6 +9,6 @@ def test_localizer_uses_user_selected_sol_and_snapshot_records_revision():
     assert localizer["model"] == "gpt-5.6-sol"
     assert localizer["base_url"] == teacher["base_url"]
     assert localizer["api_mode"] == "responses"
-    assert snapshot["online_roles"]["judge"]["model"] == "deepseek-flash"
-    assert "localizer-sol" in snapshot["engineering_model_revision"]
+    assert snapshot["online_roles"]["judge"]["model"] == "gpt-5.6-sol"
+    assert "judge-teacher-localizer-sol" in snapshot["engineering_model_revision"]
     assert snapshot["research_manifest"]["schema_version"] >= 1

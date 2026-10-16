@@ -5,7 +5,7 @@ React + TypeScript + Vite + Tailwind CSS，桌面Web，保留浅色256/80px固�
 ```bash
 cd /mnt/mydrive/project/medical-report-qc/frontend
 npm ci
-npm run dev       # http://127.0.0.1:5174；/api代理至5100
+npm run dev       # 监听0.0.0.0:5174；通过本机或服务器局域网IP访问；/api代理至5100
 npm run test
 npm run build     # 生产dist，不生成或加载示例结果
 npm run test:e2e  # 独立测试API/MySQL + Chrome；需5100/5174空闲

@@ -1,6 +1,6 @@
 # 医学影像报告质控系统
 
-React＋TypeScript＋Vite＋Tailwind桌面Web，FastAPI＋MySQL持久业务，Celery后台任务。默认独立执行诊断一致性、字符纠错、语法纠错、检索增强定位；原始报告、模型建议与人工意见分别保存，支持批量无效行保留、失败继续/重试、Top10原报告溯源及7工作表XLSX。
+React＋TypeScript＋Vite＋Tailwind桌面Web，FastAPI＋MySQL持久业务，Celery后台任务。默认独立执行诊断一致性、字符纠错、语法纠错、检索增强定位；原始报告、模型建议与人工意见分别保存，支持批量无效行保留、失败继续/重试、Top10原报告溯源及7工作表XLSX。人工复核按质控任务汇总待复核报告与建议数量，进入任务后逐条处理。
 
 - [运行、环境、配置与维护](docs/operations.md)
 - [后端](backend/README.md) · [前端](frontend/README.md) · [分层验收及限制](docs/acceptance/README.md)
@@ -8,7 +8,7 @@ React＋TypeScript＋Vite＋Tailwind桌面Web，FastAPI＋MySQL持久业务，Ce
 - [设计与方法spec](docs/superpowers/specs/) · [实施计划](docs/superpowers/plans/2026-10-15-medical-qc-implementation.md)
 - [日志规范原文](docs/通用项目日志规范.md) · [本项目约定](docs/日志落地约定.md)
 
-业务API5100，Web5174，CPU检索8102；模型部署复用独立项目 `/mnt/mydrive/project/medicalReportModelService` 的5555。模型、语料、索引只经配置引用，不复制入Git，无需Docker或Milvus。在线教师/定位当前为gpt-5.6-sol，诊断判别为deepseek-flash；角色不可用显式报错，无静默切换。
+业务API5100，Web5174，CPU检索8102；模型部署复用独立项目 `/mnt/mydrive/project/medicalReportModelService` 的5555。模型、语料、索引只经配置引用，不复制入Git，无需Docker或Milvus。在线诊断判别/教师/定位当前均为gpt-5.6-sol；角色不可用显式报错，无静默切换。
 
 ```text
 backend/app/           # API、数据库、任务编排、四项pipeline与HTTP客户端

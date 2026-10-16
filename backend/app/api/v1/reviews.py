@@ -1,4 +1,4 @@
-from app.schemas.dto import ReviewDTO, PageDTO
+from app.schemas.dto import ReviewDTO, ReviewTaskDTO, PageDTO
 from uuid import UUID
 from fastapi import APIRouter, Request, Depends, Query
 from sqlalchemy import select
@@ -6,11 +6,23 @@ from app.api.dependencies import session
 from app.api.envelope import ok, RESPONSES
 from contracts.responses import ApiSuccess, ApiErrorResponse
 from app.schemas.requests import ReviewCreate
-from app.services.review_service import append_review, review_dto
+from app.services.review_service import append_review, review_dto, review_tasks
 from app.services.common import page
 from app.db.models import ReviewDecision, ModuleResult, RunReport
 
 router = APIRouter()
+
+
+@router.get(
+    "/reviews/tasks", response_model=ApiSuccess[PageDTO[ReviewTaskDTO]] | ApiErrorResponse
+)
+def tasks(
+    request: Request,
+    page_number: int = Query(1, alias="page", ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    s=Depends(session, scope="function"),
+):
+    return ok(request, review_tasks(s, page_number, page_size))
 
 
 @router.post(

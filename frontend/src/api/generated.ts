@@ -226,6 +226,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reviews/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tasks */
+        get: operations["tasks_api_v1_reviews_tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs": {
         parameters: {
             query?: never;
@@ -472,6 +489,23 @@ export interface components {
         /** ApiSuccess[PageDTO[ReviewDTO]] */
         ApiSuccess_PageDTO_ReviewDTO__: {
             data: components["schemas"]["PageDTO_ReviewDTO_"];
+            /** Detail */
+            detail?: null;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Status
+             * @default success
+             * @constant
+             */
+            status: "success";
+        };
+        /** ApiSuccess[PageDTO[ReviewTaskDTO]] */
+        ApiSuccess_PageDTO_ReviewTaskDTO__: {
+            data: components["schemas"]["PageDTO_ReviewTaskDTO_"];
             /** Detail */
             detail?: null;
             /**
@@ -896,6 +930,17 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** PageDTO[ReviewTaskDTO] */
+        PageDTO_ReviewTaskDTO_: {
+            /** Items */
+            items: components["schemas"]["ReviewTaskDTO"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
         /** PageDTO[RunDTO] */
         PageDTO_RunDTO_: {
             /** Items */
@@ -1034,6 +1079,23 @@ export interface components {
              * @enum {string}
              */
             type: "accept" | "reject" | "edit" | "defer";
+        };
+        /** ReviewTaskDTO */
+        ReviewTaskDTO: {
+            /** Created At */
+            created_at: string;
+            /** Filename */
+            filename: string | null;
+            /** Pending Reports */
+            pending_reports: number;
+            /** Pending Results */
+            pending_results: number;
+            /** Report Total */
+            report_total: number;
+            /** Run Id */
+            run_id: string;
+            /** Status */
+            status: string;
         };
         /** RunCreate */
         RunCreate: {
@@ -1489,6 +1551,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiSuccess_ReviewDTO_"] | components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    tasks_api_v1_reviews_tasks_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiSuccess_PageDTO_ReviewTaskDTO__"] | components["schemas"]["ApiErrorResponse"];
                 };
             };
         };

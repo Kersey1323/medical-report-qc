@@ -141,6 +141,34 @@
         "title": "ApiSuccess[PageDTO[ReviewDTO]]",
         "type": "object"
       },
+      "ApiSuccess_PageDTO_ReviewTaskDTO__": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageDTO_ReviewTaskDTO_"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "null"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "status": {
+            "const": "success",
+            "default": "success",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ],
+        "title": "ApiSuccess[PageDTO[ReviewTaskDTO]]",
+        "type": "object"
+      },
       "ApiSuccess_PageDTO_RunDTO__": {
         "properties": {
           "data": {
@@ -1163,6 +1191,37 @@
         "title": "PageDTO[ReviewDTO]",
         "type": "object"
       },
+      "PageDTO_ReviewTaskDTO_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewTaskDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "PageDTO[ReviewTaskDTO]",
+        "type": "object"
+      },
       "PageDTO_RunDTO_": {
         "properties": {
           "items": {
@@ -1545,6 +1604,56 @@
           "created_at"
         ],
         "title": "ReviewDTO",
+        "type": "object"
+      },
+      "ReviewTaskDTO": {
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
+          },
+          "pending_reports": {
+            "title": "Pending Reports",
+            "type": "integer"
+          },
+          "pending_results": {
+            "title": "Pending Results",
+            "type": "integer"
+          },
+          "report_total": {
+            "title": "Report Total",
+            "type": "integer"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "created_at",
+          "status",
+          "filename",
+          "report_total",
+          "pending_reports",
+          "pending_results"
+        ],
+        "title": "ReviewTaskDTO",
         "type": "object"
       },
       "RunCreate": {
@@ -2619,6 +2728,57 @@
           }
         },
         "summary": "Create"
+      }
+    },
+    "/api/v1/reviews/tasks": {
+      "get": {
+        "operationId": "tasks_api_v1_reviews_tasks_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiSuccess_PageDTO_ReviewTaskDTO__"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiErrorResponse"
+                    }
+                  ],
+                  "title": "Response Tasks Api V1 Reviews Tasks Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Tasks"
       }
     },
     "/api/v1/runs": {

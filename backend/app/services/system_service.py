@@ -119,7 +119,9 @@ def _preflight(settings, checks, profiles, snapshot, http):
             if not key or not rc.get("model") or not rc.get("base_url"):
                 reasons[b].append("在线角色 " + role + " 缺少模型、地址或密钥配置")
             else:
-                probe_key = (rc["base_url"], rc["model"])
+                # Each role may use different credentials for the same endpoint/model.
+                # Never reuse another role's authorization success or failure.
+                probe_key = (role, rc["base_url"], rc["model"])
                 if probe_key not in online_probes:
                     online_probes[probe_key] = online.available(role, rc)
                 available, reason = online_probes[probe_key]

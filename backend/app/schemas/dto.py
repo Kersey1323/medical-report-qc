@@ -78,6 +78,16 @@ class ReviewDTO(BaseModel):
     created_at: str
 
 
+class ReviewTaskDTO(BaseModel):
+    run_id: str
+    created_at: str
+    status: str
+    filename: str | None
+    report_total: int
+    pending_reports: int
+    pending_results: int
+
+
 class AttemptDTO(BaseModel):
     id: str
     generation: int

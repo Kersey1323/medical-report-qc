@@ -1,5 +1,5 @@
-from sqlalchemy import select
-from app.db.models import ModuleResult, ReviewDecision, RunReport, QualityRun
+from sqlalchemy import select, func
+from app.db.models import ModuleResult, ReviewDecision, RunReport, QualityRun, Import
 from app.services.common import require, stamp
 from app.core.exceptions import fail
 
@@ -89,3 +89,46 @@ def pending_review_condition():
         ModuleResult.finding.in_(["issue", "needs_review"]),
         or_(last.is_(None), last == "defer"),
     )
+
+
+def review_tasks(s, page_number=1, page_size=20):
+    """Aggregate the current pending queue in SQL before paginating tasks."""
+    pending = (
+        select(
+            RunReport.run_id.label("run_id"),
+            func.count(func.distinct(RunReport.id)).label("pending_reports"),
+            func.count(ModuleResult.id).label("pending_results"),
+        )
+        .join(ModuleResult, ModuleResult.run_report_id == RunReport.id)
+        .where(pending_review_condition())
+        .group_by(RunReport.run_id)
+        .subquery()
+    )
+    reports = (
+        select(RunReport.run_id, func.count(RunReport.id).label("report_total"))
+        .group_by(RunReport.run_id)
+        .subquery()
+    )
+    query = (
+        select(
+            QualityRun.id.label("run_id"),
+            QualityRun.created_at,
+            QualityRun.status,
+            Import.filename,
+            reports.c.report_total,
+            pending.c.pending_reports,
+            pending.c.pending_results,
+        )
+        .join(pending, pending.c.run_id == QualityRun.id)
+        .join(reports, reports.c.run_id == QualityRun.id)
+        .outerjoin(Import, Import.id == QualityRun.import_id)
+        .order_by(QualityRun.created_at.desc(), QualityRun.id)
+    )
+    total = s.scalar(select(func.count()).select_from(pending))
+    rows = s.execute(query.offset((page_number - 1) * page_size).limit(page_size)).mappings()
+    return {
+        "items": [dict(row) | {"created_at": stamp(row["created_at"])} for row in rows],
+        "total": total,
+        "page": page_number,
+        "page_size": page_size,
+    }

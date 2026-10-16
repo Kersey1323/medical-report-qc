@@ -14,6 +14,7 @@ export interface RunReport{id:string;run_id:string;report_id:string|null;origina
 export interface Outcome{status:ExecutionStatus;finding:Finding|null;spans?:SourceSpan[];suggestions?:Array<{start?:number;end?:number;before?:string;after?:string;text?:string}>;details?:Record<string,unknown>;error?:ErrorDetail|null;stages?:unknown[]}
 export type ReviewType='accept'|'reject'|'edit'|'defer';
 export type ReviewDTO=Schema['ReviewDTO'];
+export type ReviewTaskDTO=Schema['ReviewTaskDTO'];
 export interface ResultDTO{id:string;run_id:string;run_report_id:string;branch:CheckKey;generation:number;review_revision:number;source_field:'description'|'diagnosis';source:string;outcome:Outcome;attempts:Array<{id:string;stage:string;generation:number;status:string;attempt_no:number;error?:ErrorDetail}>;reviews:ReviewDTO[];versions:unknown[]}
 export type Candidate=Schema['Candidate'];
 export type EvidenceSnapshot=Schema['EvidenceSnapshot'];

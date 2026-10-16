@@ -11,7 +11,7 @@ Environment=TZ=Asia/Shanghai
 Environment=INSTANCE_ID=api
 Environment=APP_LOG_DIR=@PROJECT@/var/logs
 UMask=0077
-ExecStart=@BUSINESS_PYTHON@ -m uvicorn app.main:app --host 127.0.0.1 --port 5100 --workers 1
+ExecStart=@BUSINESS_PYTHON@ -m uvicorn app.main:app --host 0.0.0.0 --port 5100 --workers 1
 TimeoutStartSec=180
 TimeoutStopSec=60
 Restart=on-failure

@@ -2,7 +2,7 @@
 
 ## 服务与配置
 
-业务API `127.0.0.1:5100`，React开发服务 `127.0.0.1:5174`，独立CPU检索 `127.0.0.1:8102`；已有模型项目 `medicalReportModelService` 在5555提供三个GPU角色以及CPU embedding/rerank。不要再次加载GPU或停止旧服务。业务环境不加载Torch、Transformers或LlamaIndex；LlamaIndex仅在检索环境恢复既有向量，禁止自动重建。无需Docker/Milvus/Neo4j/MinIO。
+业务API `0.0.0.0:5100`，React开发服务 `0.0.0.0:5174`，独立CPU检索 `127.0.0.1:8102`；已有模型项目 `medicalReportModelService` 在5555提供三个GPU角色以及CPU embedding/rerank。不要再次加载GPU或停止旧服务。业务环境不加载Torch、Transformers或LlamaIndex；LlamaIndex仅在检索环境恢复既有向量，禁止自动重建。无需Docker/Milvus/Neo4j/MinIO。
 
 所有命令均以普通用户dell执行。环境文件 `backend/.env` 权限600，var及日志目录700；上传/导出文件600。模型与索引按只读资产处理。免登录版只应暴露在受控网络；API、worker、内部模型接口不直接发布到公网。
 
@@ -33,7 +33,7 @@ cd /mnt/mydrive/project/medical-report-qc/backend
 ../.venv/bin/python -m alembic upgrade head
 ```
 
-在线模型位于 `configs/profiles.yaml`：判别 `deepseek-flash`、教师与定位 `gpt-5.6-sol`（Responses，reasoning low）。定位切换为sol是2026-10-15用户确认的新工程配置，不冒充历史实验配置。分别填写JUDGE_API_KEY、TEACHER_API_KEY、LOCALIZER_API_KEY；后两者当前指向同一兼容网关，需填写该网关密钥。无自动降级模型。目录预检通过不代表实际推理授权、额度及协议必然可用，真实测试另行记录。
+在线模型位于 `configs/profiles.yaml`：判别、教师与定位均为 `gpt-5.6-sol`（Responses，reasoning low）。2026-10-16 工程配置已将判别切换至同一兼容网关，不冒充历史实验配置。分别填写JUDGE_API_KEY、TEACHER_API_KEY、LOCALIZER_API_KEY；三者均需使用该网关的有效密钥，禁止沿用其他供应商的密钥。无自动降级模型。目录预检通过不代表实际推理授权、额度及协议必然可用，真实测试另行记录。
 
 索引位置在 `configs/retrieval.yaml`；历史digest未知，默认拒绝加载。已在本机对三个节点做查询embedding对比，余弦均>0.99996；本机明确开启 `ALLOW_UNKNOWN_EMBEDDING_PROVENANCE=true`，就绪信息仍公开unknown，不能当作历史模型身份证明。全文只来自配置allowlist，经文档ID、历史MD5与文本核验；无法验证时展示片段。
 
@@ -50,7 +50,7 @@ INSTANCE_ID=retrieval .venv-retrieval/bin/python -m uvicorn retrieval_runtime.ma
 ```bash
 # 终端2：业务API
 cd /mnt/mydrive/project/medical-report-qc/backend
-INSTANCE_ID=api ../.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 5100 --workers 1
+INSTANCE_ID=api ../.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 5100 --workers 1
 ```
 
 ```bash
@@ -65,7 +65,7 @@ cd /mnt/mydrive/project/medical-report-qc/frontend
 npm run dev
 ```
 
-浏览器打开 `http://127.0.0.1:5174`。按Ctrl+C仅停止当前终端拥有的服务。worker优先温和停止等待在途任务；强制终止后通过恢复程序以原请求ID核对，不重复提交不确定请求。
+本机浏览器打开 `http://127.0.0.1:5174`，局域网其他设备打开 `http://<服务器局域网IP>:5174`；API 地址为 `http://<服务器局域网IP>:5100`。`0.0.0.0` 是监听地址，浏览器访问时应使用实际 IP。按Ctrl+C仅停止当前终端拥有的服务。worker优先温和停止等待在途任务；强制终止后通过恢复程序以原请求ID核对，不重复提交不确定请求。
 
 API提交事务后尝试发布outbox，API启动也尝试恢复；正式部署必须启用每60秒的恢复任务，或临时手动执行：
 

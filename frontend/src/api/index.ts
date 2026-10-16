@@ -1,5 +1,5 @@
 import {apiRequest,post} from './client';
-import type {ReportDTO,RunDTO,RunReport,CheckKey,Page,ResultDTO,ReviewDTO,ReviewType,ImportDTO,ArtifactDTO,PreflightDTO,Summary,EvidenceSnapshot} from './types';
+import type {ReportDTO,RunDTO,RunReport,CheckKey,Page,ResultDTO,ReviewDTO,ReviewTaskDTO,ReviewType,ImportDTO,ArtifactDTO,PreflightDTO,Summary,EvidenceSnapshot} from './types';
 export const createReport=(data:{description:string;diagnosis:string})=>post<ReportDTO>('/reports',data);
 export const createRun=(data:{report_ids?:string[];import_id?:string;checks:CheckKey[]})=>post<RunDTO>('/runs',data);
 export const startRun=(id:string)=>post<RunDTO>(`/runs/${id}/start`);
@@ -14,7 +14,8 @@ export const preflight=(checks:CheckKey[])=>post<PreflightDTO>('/system/prefligh
 export const getStatus=(signal?:AbortSignal)=>apiRequest<PreflightDTO>('/system/status',{signal});
 export const getResult=(id:string,signal?:AbortSignal)=>apiRequest<ResultDTO>(`/results/${id}`,{signal});
 export const getEvidence=(id:string,signal?:AbortSignal)=>apiRequest<EvidenceSnapshot[]>(`/results/${id}/evidence`,{signal});
-export const getQueue=(page=1,signal?:AbortSignal)=>apiRequest<Page<ResultDTO>>(`/results?review_state=pending&page=${page}`,{signal});
+export const getReviewTasks=(page=1,signal?:AbortSignal)=>apiRequest<Page<ReviewTaskDTO>>(`/reviews/tasks?page=${page}`,{signal});
+export const getQueue=(page=1,signal?:AbortSignal,runId?:string)=>apiRequest<Page<ResultDTO>>(`/results?review_state=pending&page=${page}${runId?'&run_id='+encodeURIComponent(runId):''}`,{signal});
 export const appendReview=(r:ResultDTO,type:ReviewType,text?:string,note?:string)=>post<ReviewDTO>('/reviews',{module_result_id:r.id,generation:r.generation,expected_revision:r.review_revision,type,text,note});
 export const uploadImport=(file:File)=>{const body=new FormData();body.append('file',file);return apiRequest<ImportDTO>('/imports',{method:'POST',body})};
 export const getImport=(id:string,signal?:AbortSignal)=>apiRequest<ImportDTO>(`/imports/${id}`,{signal});
