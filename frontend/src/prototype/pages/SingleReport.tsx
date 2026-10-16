@@ -1,0 +1,18 @@
+import { useState } from 'react';
+import { FileText, Play } from 'lucide-react';
+import type { CheckKey } from '../types';
+import { allCheckKeys, checks, sampleDescription, sampleDiagnosis } from '../data/demo';
+import { Badge, Button, Footer, InfoLine, PageHead, Panel } from '../components/ui';
+
+export const fieldClass = 'input bg-zinc-100 border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30';
+export function CheckOptions({ selected, onChange }: { selected: CheckKey[]; onChange: (keys: CheckKey[]) => void }) {
+  return <>{checks.map(m => <label className="check-option" key={m.key}><input type="checkbox" checked={selected.includes(m.key)} onChange={e => onChange(e.target.checked ? [...selected, m.key] : selected.filter(k => k !== m.key))} /><span className="grow"><b>{m.name}</b><small>{m.description}</small></span><Badge tone={m.key === 'csc' ? 'green' : ''}>{m.location}</Badge></label>)}</>;
+}
+export function SingleReport({ sample, defaultChecks, onRun }: { sample: boolean; defaultChecks: CheckKey[]; onRun: (keys: CheckKey[]) => void }) {
+  const [description, setDescription] = useState(sample ? sampleDescription : ''), [diagnosis, setDiagnosis] = useState(sample ? sampleDiagnosis : '');
+  const [selected, setSelected] = useState<CheckKey[]>([...defaultChecks]);
+  const [error, setError] = useState('');
+  const fill = () => { setDescription(sampleDescription); setDiagnosis(sampleDiagnosis); setError(''); };
+  return <div className="page"><PageHead title="单份报告质控"><Button onClick={fill}><FileText size={15} />填入合成样例</Button></PageHead><div className="form-grid"><Panel><div className="panel-head"><h2>原始报告</h2><Badge icon={<FileText size={12} />}>输入不会被自动改写</Badge></div><form onSubmit={e => { e.preventDefault(); if (!description.trim()) return setError('请先填写影像描述。'); if (selected.includes('diagnosis') && !diagnosis.trim()) return setError('诊断质控需要原始医生诊断。'); if (!selected.length) return setError('至少选择一项检查。'); setError(''); onRun(selected); }}><div className="panel-body"><label className="field"><span className="label">报告编号 <span className="soft small font-normal">选填</span></span><input className={fieldClass} placeholder="例如：CT-20261015-001" maxLength={60} /></label><label className="field"><span className="label">影像描述 <span className="soft small font-normal">{Array.from(description).length} 字</span></span><textarea className={`${fieldClass} textarea long`} value={description} onChange={e => setDescription(e.target.value)} placeholder="粘贴影像所见 / 检查描述……" /></label><label className="field"><span className="label">医生诊断 <span className="soft small font-normal">诊断质控启用时必填</span></span><textarea className={`${fieldClass} textarea`} value={diagnosis} onChange={e => setDiagnosis(e.target.value)} placeholder="粘贴医生的诊断意见……" /></label>{error && <div role="alert" className="input-error">{error}</div>}</div><div className="panel-foot"><span className="text-caption">当前选择 <b>{selected.length}</b> 项检查</span><Button type="submit" variant="primary" disabled={!selected.length}><Play size={14} />演示质控流程</Button></div></form></Panel>
+    <div className="stack"><Panel><div className="panel-head"><h2>检查项目</h2><button className="btn-link" onClick={() => setSelected([...allCheckKeys])}>全部选择</button></div><div className="panel-body"><CheckOptions selected={selected} onChange={setSelected} /></div></Panel><Panel><div className="panel-head"><h2>处理方式</h2></div><div className="panel-body"><dl className="config-list"><dt>检查输入</dt><dd>原始描述 / 原始诊断</dd><dt>单项失败</dt><dd>保留结果，继续其他检查</dd><dt>结果确认</dt><dd>人工逐项复核</dd></dl><div className="mt16"><InfoLine>此原型不处理输入文本。演示将打开内置合成报告的选定检查结果，不调用模型。</InfoLine></div></div></Panel></div></div><Footer /></div>;
+}

@@ -1,0 +1,21 @@
+[Unit]
+Description=Medical report QC recovery
+After=network.target
+
+[Service]
+Type=oneshot
+User=@USER@
+WorkingDirectory=@PROJECT@/backend
+EnvironmentFile=@PROJECT@/backend/.env
+Environment=TZ=Asia/Shanghai
+Environment=INSTANCE_ID=recovery
+Environment=APP_LOG_DIR=@PROJECT@/var/logs
+UMask=0077
+ExecStart=@BUSINESS_PYTHON@ -m app.tasks.recovery --once
+TimeoutStartSec=180
+TimeoutStopSec=60
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

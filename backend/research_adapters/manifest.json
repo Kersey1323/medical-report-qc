@@ -1,0 +1,12 @@
+{
+  "source_hashes": {
+    "/mnt/mydrive/LLM/rag-optimizer/prompts/diagnosis_generation_v1.txt": "eb39563dcb1d277ab65646247bee17da2f6ae114d6dc0eaf3370567aa95a669c",
+    "/mnt/mydrive/LLM/rag-optimizer/prompts/diagnosis_qc_localize_v2.txt": "7ebdccf3e67f2b0d8ebcf1a320427d98a85218c1fc72ef277bdc7c9be88549a0",
+    "/mnt/mydrive/LLM/rag-optimizer/prompts/qcrag_error_localization_v2_audit.txt": "1ff6fdbbc58466262f972c2cd7fed5254f513598d056dd2ee693e310cde55228",
+    "/mnt/mydrive/LLM/rag-optimizer/prompts/qcrag_error_localization_v2_strict_audit.txt": "77c60a1b74e86bca42576b0e9449e1627bc2d4de8cc20385c1f9f3f6faddd88a",
+    "/mnt/mydrive/LLM/LLM4CGEC/medical_validation/run_exam_proxy.py": "1d9cf872bf727c3c4dd74cd37d7d95af590b943ccac65ff74ba19fcdaaca6c85",
+    "/mnt/mydrive/LLM/rag-optimizer/src/components/retrieval/fusion_retrieval.py": "989f583f38d228a4eeffc76c61992ca3ac49bc2faaf10b9a14c02a8d3ef68bb2"
+  },
+  "extraction": "pure prompt constants and read-only fusion adapter; no offline main",
+  "schema_version": 1
+}

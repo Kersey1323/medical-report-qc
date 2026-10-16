@@ -1,23 +1,17 @@
-# 业务侧检索配置：恢复既有医学缓存，不依赖Milvus，不重新生成全库向量。
-# 当前仅完成配置；由后续retrieval_runtime加载和执行。
 schema_version: 1
-
 index:
   format: rag_optimizer_corpus_chunks
   cache_dir: /mnt/mydrive/LLM/rag-optimizer/storage/direct_cache_qcrag_shared_20260430/QcRAG_dev_gold_span
-  data_file: original.json # 相对于cache_dir；包含正文、metadata及预计算embedding
+  data_file: original.json
   expected_dimension: 1024
   load_existing_only: true
   allow_rebuild: false
-  # 旧缓存没有记录模型digest；不能仅凭维度相同认定模型兼容。
   historical_embedding_digest: null
-
 model_service:
   base_url: http://127.0.0.1:5555
   auth_enabled: false
-  token_env: MODEL_SERVICE_TOKEN # 仅开启鉴权时从环境读取，不在配置中写密钥
+  token_env: MODEL_SERVICE_TOKEN
   health_path: /health/ready
-
 embedding:
   endpoint: /internal/v1/embeddings
   model: bge-m3:latest
@@ -25,7 +19,6 @@ embedding:
   dimension: 1024
   device: cpu
   timeout_seconds: 130
-
 reranker:
   endpoint: /internal/v1/rerank
   model: bge-reranker-v2-m3
@@ -35,7 +28,6 @@ reranker:
   timeout_seconds: 120
   score_all_candidates: true
   fallback_to_recall_order: false
-
 retrieval:
   candidate_top_k: 20
   embedding_recall: true
@@ -43,15 +35,15 @@ retrieval:
   summary_recall: false
   graph_recall: false
   query_expansion: false
-
 filtering:
-  # 顺序：全候选重排 -> 去空白后比较 -> 同源/包含/近重复过滤 -> 分支取证。
   normalize_whitespace_only: true
   exclude_exact_source_match: true
   exclude_source_containment: true
   near_duplicate_threshold: 0.95
-
 evidence:
   cgec_top_k: 5
   localization_top_k: 10
   allow_fewer_candidates: true
+source_reports:
+  allowlist_files:
+  - /mnt/mydrive/LLM/rag-optimizer/data/datasets/QcRAG_dev_gold_span/documents.json

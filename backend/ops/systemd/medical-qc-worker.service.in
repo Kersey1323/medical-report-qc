@@ -1,0 +1,23 @@
+[Unit]
+Description=Medical report QC worker
+After=network.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@PROJECT@/backend
+EnvironmentFile=@PROJECT@/backend/.env
+Environment=TZ=Asia/Shanghai
+Environment=INSTANCE_ID=worker
+Environment=APP_LOG_DIR=@PROJECT@/var/logs
+UMask=0077
+ExecStart=@BUSINESS_PYTHON@ -m celery -A app.tasks.celery_app:celery_app worker --pool=threads --concurrency=4 --prefetch-multiplier=1 --loglevel=INFO
+TimeoutStartSec=180
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,18 +1,17 @@
-import { ArrowLeft, Download, FileText, Check, AlertTriangle } from 'lucide-react';
-import type { CheckKey, Decisions, Navigate, Report, ReviewType } from '../types';
-import { checks, decisionKey, exportCsv, isIncomplete, suggestionDetail, allCheckKeys } from '../data/demo';
-import { Badge, Button, Footer, MarkedText, PageHead, Panel, ReportBadge, ResultBadge } from '../components/ui';
-import { CheckResult } from '../components/CheckResult';
-
-export function ReportDetail({ report, checkKey, decisions, navigate, onReview, onEvidence, onRetry, enabled = allCheckKeys, demo = false }: { report: Report; checkKey: CheckKey; decisions: Decisions; navigate: Navigate; onReview: (id: string, key: CheckKey, type: ReviewType) => void; onEvidence: (reportId: string, key: CheckKey) => void; onRetry: (id: string, key: CheckKey) => void; enabled?: CheckKey[]; demo?: boolean }) {
-  const activeKey = enabled.includes(checkKey) ? checkKey : enabled[0], result = report.results[activeKey], detail = suggestionDetail(report, activeKey);
-  const showHighlight = result.status === 'succeeded' && result.finding !== 'no_issue';
-  return <div className="page"><PageHead title="报告详情" extra={<Badge>{report.id}</Badge>}><Button onClick={() => navigate('task/QC-1015-001')}><ArrowLeft size={15} />返回任务</Button><Button onClick={() => exportCsv([report])}><Download size={15} />导出示例 CSV</Button></PageHead>
-    {demo && <div className="notice blue mb-5"><FileText size={17} /><span>当前展示内置合成报告的 {enabled.length} 项示例结果；未推理您输入的文本。</span></div>}
-    <div className="between wrap"><div className="flex wrap"><h2>{report.name}</h2><ReportBadge report={report} />{isIncomplete(report) && <Badge tone="red">检查不完整</Badge>}</div><span className="text-caption">合成报告 · 无真实患者信息</span></div>
-    <div className="four-status" style={{ gridTemplateColumns: enabled.length === 1 ? '1fr' : undefined }}>{checks.filter(m => enabled.includes(m.key)).map(m => <button className={`branch-summary text-left cursor-pointer transition-colors duration-150 ${activeKey === m.key ? 'branch-active' : ''}`} key={m.key} onClick={() => navigate(`report/${demo ? 'demo' : report.id}/${m.key}`)}><span className="flex"><m.icon size={15} className="soft" /><b style={{ margin: 0 }}>{m.name}</b></span><div className="mt-3"><ResultBadge result={report.results[m.key]} /></div></button>)}</div>
-    <div className="result-layout"><Panel><div className="panel-head"><h2>原始报告</h2><span className="legend"><i />当前检查关联片段</span></div><div className="panel-body"><div className="report-section"><h3>影像描述</h3><div className="report-text"><MarkedText text={report.description} fragment={showHighlight && activeKey !== 'diagnosis' ? detail.source : undefined} /></div></div><div className="report-section"><h3>医生诊断</h3><div className="report-text"><MarkedText text={report.diagnosis} fragment={showHighlight && activeKey === 'diagnosis' ? detail.source : undefined} /></div></div></div><div className="panel-foot"><span className="text-caption">{Array.from(report.description).length} 字 · 原文只读</span><Badge icon={<Check size={12} />}>原始版本</Badge></div></Panel>
-      <Panel><div className="tabs result-tabs" role="tablist" aria-label="四项检查结果">{checks.filter(m => enabled.includes(m.key)).map(m => <button className={`tab ${activeKey === m.key ? 'active' : ''}`} key={m.key} role="tab" aria-selected={activeKey === m.key} aria-controls="check-result-panel" id={`tab-${m.key}`} tabIndex={activeKey === m.key ? 0 : -1} onKeyDown={e => { const list = checks.filter(c => enabled.includes(c.key)), i = list.findIndex(c => c.key === m.key); if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const next = list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length]; navigate(`report/${demo ? 'demo' : report.id}/${next.key}`); requestAnimationFrame(() => document.getElementById(`tab-${next.key}`)?.focus()); } }} onClick={() => navigate(`report/${demo ? 'demo' : report.id}/${m.key}`)}>{m.name}{report.results[m.key].status === 'failed' && <AlertTriangle size={13} />}</button>)}</div>
-      <div role="tabpanel" id="check-result-panel" aria-labelledby={`tab-${activeKey}`}><CheckResult report={report} checkKey={activeKey} decision={decisions[decisionKey(report.id, activeKey)]} onReview={type => onReview(report.id, activeKey, type)} onEvidence={() => onEvidence(report.id, activeKey)} onRetry={() => onRetry(report.id, activeKey)} /></div>
-      <details className="audit"><summary>技术记录与版本 · 示例</summary><dl className="config-list mt16"><dt>运行编号</dt><dd>QC-1015-001 / {report.id}</dd><dt>执行状态</dt><dd>{result.status}</dd><dt>模型与方法</dt><dd>{checks.find(m => m.key === activeKey)?.method}</dd><dt>配置版本</dt><dd>prototype-0.1 · 无真实推理</dd><dt>原文位置</dt><dd>Unicode code point · 半开区间</dd><dt>原始响应</dt><dd>未调用模型，无原始响应</dd></dl></details></Panel></div><Footer /></div>;
+import {getResult} from '../api';
+import {useRequest} from '../hooks/useRequest';
+import {useRunPolling} from '../hooks/useRunPolling';
+import {navigate} from '../hooks/useHashRoute';
+import type {CheckKey,Page,RunReport} from '../api/types';
+import {apiRequest} from '../api/client';
+import {checks} from '../domain/checks';
+import {PageHead,Button,Panel} from '../components/ui';
+import {ErrorPanel} from '../components/ErrorPanel';
+import {CheckResult} from '../components/CheckResult';
+export function ReportDetail({runId,reportId,branch}:{runId:string;reportId:string;branch:CheckKey}){
+ const {run,error}=useRunPolling(runId);
+ const row=useRequest(`${reportId}:${run?.revision}`,s=>apiRequest<Page<RunReport>>(`/runs/${runId}/reports?run_report_id=${reportId}`,{signal:s}).then(p=>{const r=p.items.find(r=>r.id===reportId);if(!r)throw Error('报告不存在或不属于此任务');return r}));
+ const mid=row.data?.results[branch]?.id;
+ const result=useRequest(`${mid}:${run?.revision}`,s=>mid?getResult(mid,s):Promise.resolve(undefined));
+ return <div className="page"><PageHead title="报告详情"><Button onClick={()=>navigate({page:'task',run_id:runId})}>返回任务</Button></PageHead><ErrorPanel error={error||row.error||result.error}/><nav className="branch-tabs" aria-label="报告质控项目">{checks.map(c=><Button key={c.key} variant={branch===c.key?'primary':''} disabled={!run?.checks.includes(c.key)} onClick={()=>navigate({page:'report',run_id:runId,run_report_id:reportId,branch:c.key})}>{c.name}{!run?.checks.includes(c.key)&&' · 未启用'}</Button>)}</nav>{result.data?<CheckResult key={result.data.id} result={result.data} onRefresh={result.refresh}/>:<Panel><div className="empty">{mid?'正在读取结果…':'本项未启用或暂无结果'}</div></Panel>}</div>
 }

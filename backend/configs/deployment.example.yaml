@@ -1,0 +1,12 @@
+project_root: /mnt/mydrive/project/medical-report-qc
+business_python: /mnt/mydrive/project/medical-report-qc/.venv/bin/python
+retrieval_python: /mnt/mydrive/project/medical-report-qc/backend/.venv-retrieval/bin/python
+user: dell
+ports:
+  api: 5100
+  retrieval: 8102
+  frontend: 5174
+schema: medical_report_qc
+redis_broker_db: 8
+redis_limits_db: 9
+redis_prefix: 'medical_qc:'

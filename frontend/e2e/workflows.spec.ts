@@ -1,0 +1,22 @@
+import {test,expect} from '@playwright/test';
+import {execFileSync} from 'node:child_process';
+import path from 'node:path';
+test('single report persists, shows evidence and appends review',async({page})=>{
+ await page.goto('/#single');await expect(page.getByRole('checkbox',{checked:true})).toHaveCount(4);
+ await page.getByLabel('影像描述').fill('合成报告：两肺血观束清晰，心影大小正常。');await page.getByRole('textbox',{name:'医生诊断'}).fill('合成诊断：未见明显异常。');
+ await page.getByRole('button',{name:'开始质控'}).click();await expect(page).toHaveURL(/#\/runs\/[a-f0-9-]+$/);
+ await expect(page.getByText('已处理 4 / 4 个工作单元',{exact:false})).toBeVisible();const taskUrl=page.url();await page.reload();await expect(page.getByText('已处理 4 / 4 个工作单元',{exact:false})).toBeVisible();
+ await page.getByRole('button',{name:'查看字符结果'}).click();await expect(page.locator('mark')).toHaveText('观');
+ await page.getByLabel('复核备注').fill('合成验收，确认字符建议');await page.getByRole('button',{name:'接受建议',exact:true}).click();await expect(page.getByText('合成验收，确认字符建议',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('合成验收，确认字符建议',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'检索增强定位',exact:true}).click();await page.getByRole('button',{name:'查看本次检索报告与来源'}).click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.getByRole('heading',{name:'检索报告与来源 · 实际 7 条'})).toBeVisible();await expect(page.locator('.retrieved-report')).toHaveCount(7);await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+ await page.goto(taskUrl);await page.getByRole('button',{name:'导出 XLSX',exact:true}).click();await expect(page.getByRole('button',{name:'下载 XLSX',exact:true})).toBeVisible();const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'下载 XLSX',exact:true}).click();const download=await downloadPromise;const file=test.info().outputPath('actual.xlsx');await download.saveAs(file);
+ const summary=execFileSync(path.resolve('../.venv/bin/python'),['-c','import openpyxl,sys,json; w=openpyxl.load_workbook(sys.argv[1],data_only=False); assert len(w.sheetnames)==7 and w.sheetnames[-1]=="处理汇总"; assert all(c.data_type!="f" for s in w for row in s for c in row); print("seven literal sheets OK")',file],{encoding:'utf8'});expect(summary).toContain('OK');
+});
+test('CSV actual upload maps columns, retains invalid row and continues after failure',async({page})=>{
+ await page.goto('/#batch');await page.getByRole('button',{name:'导入报告',exact:true}).click();await page.locator('input[type=file]').setInputFiles({name:'synthetic-six.csv',mimeType:'text/csv',buffer:Buffer.from('\uFEFF描述,诊断\n故障样本：两肺清晰,正常\n合成血观束清晰,正常\n,正常\n合成正常报告,正常\n故障样本：非BMP𠮷灶,正常\n合成末行正常,正常\n')});
+ await expect(page.getByText('解析完成',{exact:false})).toBeVisible();await page.getByLabel('描述列').selectOption('描述');await page.getByLabel('诊断列').selectOption('诊断');await page.getByRole('button',{name:'确认映射并创建任务'}).click();await expect(page).toHaveURL(/#\/runs\/[a-f0-9-]+$/);await expect(page.getByText('已处理 20 / 20 个工作单元',{exact:false})).toBeVisible();await expect(page.getByText('无效 1',{exact:true})).toBeVisible();await expect(page.getByText('失败 2',{exact:true})).toBeVisible();await expect(page.locator('.result-link')).toHaveCount(20);await page.reload();await expect(page.getByText('失败 2',{exact:true})).toBeVisible();
+});
+for(const width of [1280,1440,1920])test(`desktop ${width}px and collapsed sidebar`,async({page})=>{
+ await page.setViewportSize({width,height:1000});await page.goto('/#single');expect(await page.locator('.studio-sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(256);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:test.info().outputPath(`desktop-${width}.png`)});await page.getByRole('button',{name:'收起侧边栏',exact:true}).click();await expect(page.getByRole('button',{name:'展开侧边栏',exact:true})).toBeVisible();expect(await page.locator('.studio-sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(80);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+test('unknown ID reports server detail without example fallback',async({page})=>{await page.goto('/#/runs/00000000-0000-4000-8000-000000000000');await page.getByText('错误详情与追踪编号',{exact:true}).click();await expect(page.getByText('resource_not_found',{exact:false})).toBeVisible();await expect(page.locator('.result-link')).toHaveCount(0)});

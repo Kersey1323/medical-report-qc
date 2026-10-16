@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "medical-report-qc"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "pydantic-settings>=2.8,<3", "SQLAlchemy>=2.0,<3", "alembic>=1.15,<2", "PyMySQL>=1.1,<2", "cryptography>=44", "redis>=5,<7", "celery>=5.4,<6", "loguru>=0.7,<1", "httpx>=0.28,<1", "openpyxl>=3.1,<4", "python-multipart>=0.0.20", "PyYAML>=6,<7"]
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "pytest-timeout>=2,<3"]
+retrieval = ["numpy>=1.26,<3", "jieba>=0.42,<1", "rank-bm25>=0.2,<1", "llama-index-core>=0.14,<0.15", "llama-index-retrievers-bm25>=0.6,<0.7"]
+[tool.setuptools.packages.find]
+include = ["app*", "contracts*", "retrieval_runtime*", "research_adapters*"]
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

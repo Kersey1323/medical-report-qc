@@ -27,3 +27,10 @@ coverage/
 *.ckpt
 *.gguf
 *.log
+
+# 隔离检索环境与验收产物
+.venv*/
+dist-prototype/
+playwright-report/
+test-results/
+configs/deployment.local.yaml

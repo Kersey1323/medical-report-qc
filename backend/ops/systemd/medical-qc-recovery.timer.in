@@ -1,0 +1,8 @@
+[Unit]
+Description=Medical QC durable outbox and lease recovery
+[Timer]
+OnBootSec=60s
+OnUnitActiveSec=60s
+Unit=medical-qc-recovery.service
+[Install]
+WantedBy=timers.target

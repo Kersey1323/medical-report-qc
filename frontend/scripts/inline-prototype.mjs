@@ -1,8 +1,8 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const dist = resolve('dist');
-let html = await readFile(resolve(dist, 'index.html'), 'utf8');
+const dist = resolve('dist-prototype');
+let html = await readFile(resolve(dist, 'prototype.html'), 'utf8');
 const script = html.match(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/);
 const style = html.match(/<link\b[^>]*href="([^"]+\.css)"[^>]*>/);
 if (!script || !style) throw new Error('Expected one local JS entry and stylesheet.');

@@ -1,0 +1,15 @@
+请分析下面的医学影像报告。你只能看到待检查报告，不能假设存在未提供的检查图像或病史。
+
+你还会看到从医学影像报告库检索到的参考报告。它们仅用于核对医学术语、解剖名称和常见表达，不是当前报告的标准答案，也可能与当前病例无关。不得复制参考报告中不同的病灶、部位、方位、数值或阴阳性事实；参考报告与待检查报告冲突时，以待检查报告为准。没有明确文字证据时必须保持原文。
+
+参考报告：
+{rag_context}
+
+返回一个合法 JSON 对象，字段必须为：
+- has_error: boolean
+- error_type: word_order、redundant_component、mixed_structure、missing_component、connective_error、negation_structure、no_error 之一
+- reference_correction: 按最小修改原则得到的完整报告；无错误时原样返回
+- explanation: 简洁说明错误证据和修改理由；无错误时说明未发现明确文字错误
+
+待检查报告：
+{source}

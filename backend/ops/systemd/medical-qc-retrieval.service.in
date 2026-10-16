@@ -1,0 +1,23 @@
+[Unit]
+Description=Medical report QC retrieval
+After=network.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@PROJECT@/backend
+EnvironmentFile=@PROJECT@/backend/.env
+Environment=TZ=Asia/Shanghai
+Environment=INSTANCE_ID=retrieval
+Environment=APP_LOG_DIR=@PROJECT@/var/logs
+UMask=0077
+ExecStart=@RETRIEVAL_PYTHON@ -m uvicorn retrieval_runtime.main:app --host 127.0.0.1 --port 8102 --workers 1
+TimeoutStartSec=180
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

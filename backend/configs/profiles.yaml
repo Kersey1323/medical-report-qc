@@ -1,0 +1,32 @@
+schema_version: 1
+profiles:
+  diagnosis: diagnosis_thesis
+  csc: csc_punctuation_128_v1
+  cgec: cgec_rag_reference_1_5b
+  rag: rag_localization_two_stage_v1
+online_roles:
+  judge:
+    provider: deepseek
+    model: deepseek-flash
+    base_url: https://api.deepseek.com/v1
+    api_mode: chat_completions
+    timeout: 120
+    output_limit: 2048
+    temperature: 0
+  teacher:
+    provider: research-openai-compatible
+    model: gpt-5.6-sol
+    base_url: http://192.168.188.3:20000/v1
+    api_mode: responses
+    reasoning_effort: low
+    timeout: 120
+    output_limit: 2048
+  localizer:
+    provider: research-openai-compatible
+    model: gpt-5.6-sol
+    base_url: http://192.168.188.3:20000/v1
+    api_mode: responses
+    reasoning_effort: low
+    timeout: 120
+    output_limit: 2048
+engineering_model_revision: 2026-10-15-judge-flash-localizer-sol
