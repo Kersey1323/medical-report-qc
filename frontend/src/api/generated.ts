@@ -380,6 +380,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/single/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Single Stream */
+        post: operations["single_stream_api_v1_single_stream_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system/config": {
         parameters: {
             query?: never;
@@ -1299,6 +1316,22 @@ export interface components {
             /** Run Id */
             run_id: string;
         };
+        /** SingleCheck */
+        SingleCheck: {
+            /** Checks */
+            checks?: ("diagnosis" | "csc" | "cgec" | "rag")[];
+            /** Description */
+            description: string;
+            /**
+             * Diagnosis
+             * @default
+             */
+            diagnosis: string;
+            /** Profiles */
+            profiles?: {
+                [key: string]: string;
+            };
+        };
         /** SourceSpan */
         SourceSpan: {
             /** End */
@@ -1923,6 +1956,28 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ApiSuccess_RunDTO_"] | components["schemas"]["ApiErrorResponse"];
                 };
+            };
+        };
+    };
+    single_stream_api_v1_single_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SingleCheck"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -1,10 +1,11 @@
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import path from 'node:path';
-test('single report persists, shows evidence and appends review',async({page})=>{
- await page.goto('/#single');await expect(page.getByRole('checkbox',{checked:true})).toHaveCount(4);
- await page.getByLabel('影像描述').fill('合成报告：两肺血观束清晰，心影大小正常。');await page.getByRole('textbox',{name:'医生诊断'}).fill('合成诊断：未见明显异常。');
- await page.getByRole('button',{name:'开始质控'}).click();await expect(page).toHaveURL(/#\/runs\/[a-f0-9-]+$/);
+test('durable task persists, shows evidence and appends review',async({page})=>{
+ const report=(await (await page.request.post('/api/v1/reports',{data:{description:'合成报告：两肺血观束清晰，心影大小正常。',diagnosis:'合成诊断：未见明显异常。'}})).json()).data;
+ const run=(await (await page.request.post('/api/v1/runs',{data:{report_ids:[report.id],checks:['diagnosis','csc','cgec','rag']}})).json()).data;
+ await page.request.post(`/api/v1/runs/${run.id}/start`);
+ await page.goto(`/#/runs/${run.id}`);
  await expect(page.getByText('已处理 4 / 4 个工作单元',{exact:false})).toBeVisible();const taskUrl=page.url();await page.reload();await expect(page.getByText('已处理 4 / 4 个工作单元',{exact:false})).toBeVisible();
  await page.getByRole('button',{name:'查看字符结果'}).click();await expect(page.locator('mark')).toHaveText('观');
  await page.getByLabel('复核备注').fill('合成验收，确认字符建议');await page.getByRole('button',{name:'接受建议',exact:true}).click();await expect(page.getByText('合成验收，确认字符建议',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('合成验收，确认字符建议',{exact:true})).toBeVisible();
@@ -17,6 +18,22 @@ test('CSV actual upload maps columns, retains invalid row and continues after fa
  await expect(page.getByText('解析完成',{exact:false})).toBeVisible();await page.getByRole('combobox',{name:'描述列'}).click();await page.getByRole('option',{name:'描述',exact:true}).click();await page.getByRole('combobox',{name:'诊断列'}).click();await page.getByRole('option',{name:'诊断',exact:true}).click();await page.getByRole('button',{name:'确认映射并创建任务'}).click();await expect(page).toHaveURL(/#\/runs\/[a-f0-9-]+$/);await expect(page.getByText('已处理 20 / 20 个工作单元',{exact:false})).toBeVisible();await expect(page.getByText('无效 1',{exact:true})).toBeVisible();await expect(page.getByText('失败 2',{exact:true})).toBeVisible();await expect(page.locator('.result-link')).toHaveCount(20);await page.reload();await expect(page.getByText('失败 2',{exact:true})).toBeVisible();
 });
 for(const width of [1280,1440,1920])test(`desktop ${width}px and collapsed sidebar`,async({page})=>{
- await page.setViewportSize({width,height:1000});await page.goto('/#single');expect(await page.locator('.studio-sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(256);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:test.info().outputPath(`desktop-${width}.png`)});await page.getByRole('button',{name:'收起侧边栏',exact:true}).click();await expect(page.getByRole('button',{name:'展开侧边栏',exact:true})).toBeVisible();expect(await page.locator('.studio-sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(76);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.setViewportSize({width,height:1000});await page.goto('/#single');
+ const sidebar=page.locator('.studio-sidebar');
+ expect(await sidebar.evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(88);
+ const item=page.getByRole('link',{name:'单份质控',exact:true});
+ await expect(item.locator('.nav-label')).toBeVisible();
+ await expect(item).toHaveAttribute('aria-current','page');
+ const iconBox=await item.locator('svg').boundingBox(),labelBox=await item.locator('.nav-label').boundingBox();
+ expect(iconBox!.y+iconBox!.height).toBeLessThan(labelBox!.y);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:test.info().outputPath(`desktop-${width}.png`)});
+ await page.getByRole('button',{name:'展开侧边栏',exact:true}).click();
+ expect(await sidebar.evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(256);
+ await page.reload();await expect(page.getByRole('button',{name:'收起侧边栏',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'收起侧边栏',exact:true}).click();
+ await expect(page.getByRole('button',{name:'展开侧边栏',exact:true})).toBeVisible();
+ expect(await sidebar.evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(88);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('unknown ID reports server detail without example fallback',async({page})=>{await page.goto('/#/runs/00000000-0000-4000-8000-000000000000');await page.getByText('错误详情与追踪编号',{exact:true}).click();await expect(page.getByText('resource_not_found',{exact:false})).toBeVisible();await expect(page.locator('.result-link')).toHaveCount(0)});

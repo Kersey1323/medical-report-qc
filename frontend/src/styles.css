@@ -105,7 +105,7 @@ small, .small { font-size: 13px; }
 .prototype-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 9px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 13px; white-space: nowrap; }
 .prototype-badge i { width: 6px; height: 6px; background: var(--primary); border-radius: 2px; }
 .studio-content { min-height: 0; flex: 1; width: 100%; padding: 24px 28px 20px; background: var(--canvas); overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; overflow-wrap: anywhere; }
-.page { max-width: 1660px; margin: 0 auto; }
+.page { width: 100%; max-width: none; margin: 0 auto; }
 .page-actions-standalone { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
 .page-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); padding: 24px 0 6px; }
 
@@ -270,12 +270,18 @@ pre, .readable-json { margin: 12px 0 0; padding: 12px; border-radius: 8px; backg
 .retrieved-report-source dt { color: var(--muted); flex-shrink: 0; }
 .retrieved-report-source dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, monospace; }
 
-.sidebar-collapsed { --sidebar-width: 76px; }
-.sidebar-collapsed .studio-sidebar { padding-inline: 12px; }
-.sidebar-collapsed .studio-brand { padding-inline: 7px; gap: 0; }
-.sidebar-collapsed :is(.brand-copy,.nav-caption,.nav-label,.nav-count,.user-copy) { display: none; }
-.sidebar-collapsed .nav-link { justify-content: center; padding: 0; }
-.sidebar-collapsed .sidebar-collapse { justify-content: center; padding: 10px; }
+/* Compact rail keeps labels visible below their icons. */
+.sidebar-collapsed { --sidebar-width: 88px; }
+.sidebar-collapsed .studio-sidebar { padding: 24px 8px 16px; }
+.sidebar-collapsed .studio-brand { justify-content: center; padding: 0 0 24px; gap: 0; }
+.sidebar-collapsed :is(.brand-copy,.nav-caption,.nav-count,.user-copy) { display: none; }
+.sidebar-collapsed .studio-nav { gap: 8px; }
+.sidebar-collapsed .nav-link {
+  flex-direction: column; justify-content: center; gap: 7px; min-height: 68px; padding: 10px 2px;
+  transition: color 150ms ease-out, background-color 150ms ease-out;
+}
+.sidebar-collapsed .nav-label { display: block; font-size: 12px; line-height: 18px; white-space: nowrap; }
+.sidebar-collapsed .sidebar-collapse { flex-direction: column; justify-content: center; gap: 6px; padding: 10px 2px; }
 .sidebar-collapsed .sidebar-user { margin-inline: 0; justify-content: center; }
 .studio-sidebar[hidden] { display: none; }
 .nav-backdrop { position: fixed; inset: 0; z-index: 35; border: 0; background: #0f172a55; cursor: default; }
@@ -541,3 +547,8 @@ pre, .readable-json { margin: 12px 0 0; padding: 12px; border-radius: 8px; backg
 .retrieval-rank { border-radius: 8px; }
 .text-red-700 { color: var(--red); }
 .text-amber-800 { color: var(--amber); }
+
+/* Desktop business pages use the space released by the compact navigation rail. */
+@media (min-width: 1024px) {
+  .studio-shell .studio-content { padding: 16px; }
+}

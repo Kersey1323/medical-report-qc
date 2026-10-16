@@ -2153,6 +2153,47 @@
         "title": "RunReportDTO",
         "type": "object"
       },
+      "SingleCheck": {
+        "properties": {
+          "checks": {
+            "items": {
+              "enum": [
+                "diagnosis",
+                "csc",
+                "cgec",
+                "rag"
+              ],
+              "type": "string"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "description": {
+            "maxLength": 200000,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "diagnosis": {
+            "default": "",
+            "maxLength": 200000,
+            "title": "Diagnosis",
+            "type": "string"
+          },
+          "profiles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Profiles",
+            "type": "object"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "SingleCheck",
+        "type": "object"
+      },
       "SourceSpan": {
         "properties": {
           "end": {
@@ -3551,6 +3592,30 @@
           }
         },
         "summary": "Start"
+      }
+    },
+    "/api/v1/single/stream": {
+      "post": {
+        "operationId": "single_stream_api_v1_single_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SingleCheck"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Single Stream",
+        "tags": [
+          "single"
+        ]
       }
     },
     "/api/v1/system/config": {

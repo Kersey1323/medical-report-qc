@@ -28,12 +28,18 @@ it('places live page actions in the topbar and clears them when the page changes
  expect(screen.queryByRole('button',{name:'新建质控'})).toBeNull();
 });
 
-it('groups settings separately, highlights report tasks, and remembers desktop collapse',()=>{
- viewport();const view=render(shell('report'));
+it('defaults to a labeled compact rail, highlights tasks, and remembers desktop preferences',()=>{
+ viewport();let view=render(shell('report'));
+ expect(screen.getByRole('button',{name:'展开侧边栏'}).getAttribute('aria-expanded')).toBe('false');
+ expect(screen.getByRole('link',{name:'单份质控'}).querySelector('.nav-label')?.textContent).toBe('单份质控');
  const primary=screen.getByRole('navigation',{name:'主导航'});
  expect(within(primary).getByRole('link',{name:'批量任务'}).getAttribute('aria-current')).toBe('page');
  expect(within(primary).queryByRole('link',{name:'运行配置'})).toBeNull();
  expect(within(screen.getByRole('navigation',{name:'系统导航'})).getByRole('link',{name:'运行配置'})).toBeTruthy();
+ fireEvent.click(screen.getByRole('button',{name:'展开侧边栏'}));
+ expect(localStorage.getItem('medical_qc:sidebar')).toBe('expanded');
+ view.unmount();view=render(shell('report'));
+ expect(screen.getByRole('button',{name:'收起侧边栏'}).getAttribute('aria-expanded')).toBe('true');
  fireEvent.click(screen.getByRole('button',{name:'收起侧边栏'}));
  expect(localStorage.getItem('medical_qc:sidebar')).toBe('collapsed');
  expect(screen.getByRole('link',{name:'批量任务'}).getAttribute('title')).toBe('批量任务');

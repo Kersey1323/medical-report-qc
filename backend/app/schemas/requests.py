@@ -68,3 +68,18 @@ class ReviewCreate(BaseModel):
 
 class ExportCreate(BaseModel):
     run_id: UUID
+
+
+class SingleCheck(Checks):
+    description: str = Field(min_length=1, max_length=200000)
+    diagnosis: str = Field(default="", max_length=200000)
+
+    @model_validator(mode="after")
+    def content(self):
+        if not self.description.strip():
+            raise ValueError("影像描述不能为空")
+        if "diagnosis" in self.checks and not self.diagnosis.strip():
+            raise ValueError("诊断质控需要医生原始诊断")
+        if self.profiles:
+            raise ValueError("临时检查使用当前工程配置")
+        return self

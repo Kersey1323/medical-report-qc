@@ -15,7 +15,7 @@ const settings={key:'settings',name:'运行配置',icon:Settings2};
 const narrowQuery='(max-width: 1023px)';
 
 export function StudioShell({active,children,pendingCount,taskCount,onHelp}:{active:string;children:ReactNode;pendingCount:number;taskCount:number;onHelp:()=>void}){
-  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('medical_qc:sidebar')==='collapsed');
+  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('medical_qc:sidebar')!=='expanded');
   const [narrow,setNarrow]=useState(()=>window.matchMedia(narrowQuery).matches);
   const [drawerOpen,setDrawerOpen]=useState(false);
   const [actionsTarget,setActionsTarget]=useState<HTMLDivElement|null>(null);
@@ -67,7 +67,7 @@ export function StudioShell({active,children,pendingCount,taskCount,onHelp}:{act
       <nav className="sidebar-secondary" aria-label="系统导航">{navItem(settings)}</nav>
       <div className="sidebar-bottom">
         {!narrow&&<button type="button" className="sidebar-collapse" onClick={()=>setCollapsed(value=>{localStorage.setItem('medical_qc:sidebar',value?'expanded':'collapsed');return !value})} aria-expanded={!collapsed} aria-controls="studio-navigation" aria-label={collapsed?'展开侧边栏':'收起侧边栏'} title={collapsed?'展开侧边栏':undefined}>
-          {collapsed?<PanelLeftOpen className="icon"/>:<PanelLeftClose className="icon"/>}<span className="nav-label">收起侧边栏</span>
+          {collapsed?<PanelLeftOpen className="icon"/>:<PanelLeftClose className="icon"/>}<span className="nav-label">{collapsed?'展开':'收起侧边栏'}</span>
         </button>}
         <div className="sidebar-user" title={isCollapsed?'本地操作者 · 免登录工作空间':undefined}><span className="avatar"><UserRound size={16}/></span><div className="user-copy"><b>本地操作者</b><small>免登录工作空间</small></div></div>
       </div>
