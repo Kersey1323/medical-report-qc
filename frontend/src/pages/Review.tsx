@@ -32,7 +32,8 @@ function TaskReview({task,refreshRevision,onTasksChanged}:{task:ReviewTaskDTO;re
    <Panel aria-label="任务待复核建议" aria-busy={queue.loading}>
     <div className="panel-head"><h2>任务内待复核建议</h2><span>{queue.data?.total??'—'}</span></div>
     <div className="review-queue">
-     {queue.data?.items.map(item=><button key={item.id} className={`queue-item ${selected===item.id?'active':''}`} aria-pressed={selected===item.id} onClick={()=>setSelected(item.id)}>
+     {queue.data?.items.map(item=><button key={item.id} className={`queue-item group ${selected===item.id?'active':''}`} aria-pressed={selected===item.id} onClick={()=>setSelected(item.id)}>
+      <span className="block-handle" aria-hidden="true">⋮⋮</span>
       <strong>{checks.find(check=>check.key===item.branch)?.name}</strong>
       <p>{item.source.slice(0,70)}{item.source.length>70?'…':''}</p>
       <small className="mono">报告 {item.run_report_id.slice(0,8)} · 第 {item.generation} 代</small>
@@ -67,7 +68,7 @@ export function Review(){
    <Button onClick={refresh}>刷新队列</Button>
   </PageHead>
   <ErrorPanel error={tasks.error}/>
-  {currentTask?<TaskReview key={currentTask.run_id} task={currentTask} refreshRevision={refreshRevision} onTasksChanged={tasks.refresh}/>:<Panel aria-busy={tasks.loading}>
+  {currentTask?<TaskReview key={currentTask.run_id} task={currentTask} refreshRevision={refreshRevision} onTasksChanged={tasks.refresh}/>:<Panel density="compact" aria-busy={tasks.loading}>
    <div className="panel-head"><h2>待复核质控任务</h2><span className="small muted">{tasks.data?.total??'—'} 个任务</span></div>
    <div className="table-scroll">
     <table className="data-table" aria-label="待复核质控任务">
@@ -75,8 +76,8 @@ export function Review(){
      <tbody>{tasks.data?.items.map(task=><tr key={task.run_id}>
       <td><b className="mono">{task.run_id.slice(0,8)}</b><small className="block muted">{new Date(task.created_at).toLocaleString()}</small></td>
       <td className="review-task-source">{task.filename||(task.report_total===1?'单份质控任务':'多份质控任务')}</td>
-      <td>{task.report_total}</td><td>{task.pending_reports}</td><td><Badge tone="amber">{task.pending_results} 条</Badge></td>
-      <td><Badge tone={task.status==='failed'?'red':task.status==='partial'?'amber':''}>{label(task.status)}</Badge></td>
+      <td className="mono">{task.report_total}</td><td className="mono">{task.pending_reports}</td><td><Badge tone="amber">{task.pending_results} 条</Badge></td>
+      <td><Badge tone={task.status==='failed'?'red':task.status==='partial'?'amber':task.status==='completed'?'green':task.status==='running'?'blue':''}>{label(task.status)}</Badge></td>
       <td><Button aria-label={`复核任务 ${task.run_id.slice(0,8)}`} onClick={()=>setSelectedTask(task)}>进入复核</Button></td>
      </tr>)}</tbody>
     </table>

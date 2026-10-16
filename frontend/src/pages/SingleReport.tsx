@@ -6,7 +6,7 @@ import type {CheckKey} from '../api/types';
 import {navigate} from '../hooks/useHashRoute';
 import {PageHead,Panel,Button} from '../components/ui';
 import {ErrorPanel} from '../components/ErrorPanel';
-export const fieldClass='bg-zinc-100 border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30';
+export const fieldClass='bg-white border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 transition-colors duration-150';
 export function CheckSelector({selected,onChange,disabled=false}:{selected:CheckKey[];onChange:(v:CheckKey[])=>void;disabled?:boolean}){return <div className="check-list">{checks.map(c=><label key={c.key} className="check-option"><input type="checkbox" checked={selected.includes(c.key)} disabled={disabled} onChange={e=>onChange(e.target.checked?[...selected,c.key]:selected.filter(k=>k!==c.key))}/><span><b>{c.name}</b><small>{c.description}</small></span></label>)}</div>}
 export function SingleReport(){
  const [description,setDescription]=useState(''),[diagnosis,setDiagnosis]=useState('');const [selected,setSelected]=useState<CheckKey[]>([...allChecks]);const [busy,setBusy]=useState(false),[error,setError]=useState<unknown>(),[pending,setPending]=useState('');const lock=useRef(false);
