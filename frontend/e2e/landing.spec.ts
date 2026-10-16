@@ -1,0 +1,75 @@
+import {test,expect} from '@playwright/test';
+
+test('home works without API and links to the QC workspace',async({page})=>{
+ const requests:string[]=[];
+ await page.route('**/api/v1/**',route=>{requests.push(route.request().url());return route.abort()});
+ await page.goto('/');
+ await expect(page.getByRole('heading',{level:1})).toContainText('可信报告');
+ await expect(page.locator('.studio-sidebar')).toHaveCount(0);
+ await page.getByRole('button',{name:'探索研究方法'}).click();
+ const first=page.getByRole('tab',{name:'第三章 诊断生成'});
+ await first.focus();await page.keyboard.press('ArrowRight');
+ await expect(page.getByRole('tabpanel')).toContainText('C2EC');
+ await expect(page.getByRole('tab',{name:'第四章 字符纠错'})).toBeFocused();
+ await page.keyboard.press('End');
+ await expect(page.getByRole('tabpanel')).toContainText('EXAM');
+ await page.reload();await expect(page.getByRole('heading',{level:1})).toBeVisible();
+ expect(requests).toEqual([]);
+ await page.getByRole('link',{name:'开始报告质控',exact:true}).click();
+ await expect(page).toHaveURL(/#single$/);
+ await expect(page.getByRole('textbox',{name:'影像描述'})).toBeVisible();
+ await page.getByRole('link',{name:'首页',exact:true}).click();
+ await expect(page).toHaveURL(/#home$/);
+ await page.getByRole('link',{name:'进入工作台',exact:true}).click();
+ await expect(page).toHaveURL(/#overview$/);
+ await expect(page.locator('.studio-sidebar')).toBeVisible();
+ await page.goBack();await expect(page.getByRole('heading',{level:1})).toBeVisible();
+});
+
+test('hero fades in on refresh and scroll reveals play once without layout shifts',async({page})=>{
+ await page.addInitScript(()=>{
+  const state=window as typeof window & {heroOpacitySamples:number[]};
+  state.heroOpacitySamples=[];
+  const sample=()=>{
+   const hero=document.querySelector('.landing-hero-copy');
+   if(hero)state.heroOpacitySamples.push(Number(getComputedStyle(hero).opacity));
+   if(state.heroOpacitySamples.length<120)requestAnimationFrame(sample);
+  };requestAnimationFrame(sample);
+ });
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ await page.goto('/#home');
+ const hero=page.locator('.landing-hero-copy');
+ await expect(hero).toHaveAttribute('data-reveal-state','visible');
+ await expect(hero).toHaveCSS('opacity','1');
+ expect(await page.evaluate(()=>(window as typeof window & {heroOpacitySamples:number[]}).heroOpacitySamples.some(n=>n<.95))).toBe(true);
+ await page.reload();
+ await expect(hero).toHaveAttribute('data-reveal-state','visible');
+ await expect(hero).toHaveCSS('opacity','1');
+ expect(await page.evaluate(()=>(window as typeof window & {heroOpacitySamples:number[]}).heroOpacitySamples.some(n=>n<.95))).toBe(true);
+ const root=page.locator('.landing-page');
+ const cards=page.locator('.landing-capability');
+ const first=cards.first();
+ await expect(first).toHaveAttribute('data-reveal-state','hidden');
+ await expect(first).toHaveCSS('opacity','0');
+ const height=await root.evaluate(el=>el.scrollHeight);
+ await first.evaluate(el=>el.scrollIntoView({behavior:'instant',block:'center'}));
+ await expect(first).toHaveAttribute('data-reveal-state','visible');
+ await expect(first).toHaveCSS('opacity','1');
+ expect(await cards.nth(3).evaluate(el=>getComputedStyle(el).transitionDelay)).toContain('0.15s');
+ expect(await root.evaluate(el=>el.scrollHeight)).toBe(height);
+ await root.evaluate(el=>el.scrollTo({top:0,behavior:'instant'}));
+ await expect(first).toHaveAttribute('data-reveal-state','visible');
+ await expect(first).toHaveCSS('opacity','1');
+ await expect(hero).toHaveCSS('opacity','1');
+ await first.evaluate(el=>el.scrollIntoView({behavior:'instant',block:'center'}));
+ await expect(first).toHaveCSS('opacity','1');
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await root.evaluate(el=>el.scrollTo({top:0,behavior:'instant'}));
+ await expect(first).not.toHaveAttribute('data-reveal-state');
+ await expect(first).toHaveCSS('opacity','1');
+ await expect(first).toHaveCSS('translate','none');
+ await page.getByRole('link',{name:'进入工作台',exact:true}).click();
+ await expect(page.locator('.home-welcome')).toHaveCount(0);
+ await expect(page.locator('.home-metrics')).toBeVisible();
+ expect((await page.locator('.home-metrics').boundingBox())!.y).toBeLessThan(150);
+});

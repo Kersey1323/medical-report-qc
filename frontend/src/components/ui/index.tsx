@@ -6,9 +6,9 @@ import {createPortal} from 'react-dom';
 import {PageActionsContext} from '../PageActionsContext';
 import type {ExecutionStatus,Finding} from '../../api/types';
 import {label} from '../../domain/checks';
-export function Button({children,className='',variant='',...props}:ButtonHTMLAttributes<HTMLButtonElement>&{variant?:string}){return <button type="button" className={`btn rounded-md font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:ring-offset-2 ${variant} ${className}`} {...props}>{children}</button>}
+export function Button({children,className='',variant='',...props}:ButtonHTMLAttributes<HTMLButtonElement>&{variant?:string}){return <button type="button" className={`btn rounded-xl font-medium transition-colors duration-200 ease-out ${variant} ${className}`} {...props}>{children}</button>}
 export function Badge({children,tone='',icon}:{children:ReactNode;tone?:string;icon?:ReactNode}){return <span className={`badge ${tone}`}>{icon}{children}</span>}
-export function Panel({className='',children,density='default',...props}:HTMLAttributes<HTMLElement>&{density?:'default'|'compact'}){return <section className={`panel bg-white border rounded-lg ${density==='compact'?'table-panel':''} ${className}`} {...props}>{children}</section>}
+export function Panel({className='',children,density='default',...props}:HTMLAttributes<HTMLElement>&{density?:'default'|'compact'}){return <section className={`panel bg-white border rounded-xl ${density==='compact'?'table-panel':''} ${className}`} {...props}>{children}</section>}
 export function PageHead({title,children}:{title:string;children?:ReactNode}){
  const target=useContext(PageActionsContext);
  return <><h1 className="sr-only">{title}</h1>{children&&(target?createPortal(children,target):target===undefined?<div className="page-actions-standalone">{children}</div>:null)}</>;

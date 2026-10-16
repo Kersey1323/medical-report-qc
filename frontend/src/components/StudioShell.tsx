@@ -1,10 +1,11 @@
 import {useEffect,useRef,useState} from 'react';
-import {LayoutGrid,FileText,Layers,ClipboardCheck,Settings2,PanelLeftClose,PanelLeftOpen,UserRound,BriefcaseMedical,ChevronRight,Info,Menu,X} from 'lucide-react';
+import {Home,LayoutGrid,FileText,Layers,ClipboardCheck,Settings2,PanelLeftClose,PanelLeftOpen,UserRound,BriefcaseMedical,ChevronRight,Info,Menu,X} from 'lucide-react';
 import type {ReactNode} from 'react';
 import {Button} from './ui';
 import {PageActionsContext} from './PageActionsContext';
 
 const nav=[
+  {key:'home',name:'首页',icon:Home},
   {key:'overview',name:'工作台',icon:LayoutGrid},
   {key:'single',name:'单份质控',icon:FileText},
   {key:'batch',name:'批量任务',icon:Layers},
@@ -53,7 +54,7 @@ export function StudioShell({active,children,pendingCount,taskCount,onHelp}:{act
     {item.key==='review'&&<span className="nav-count">{pendingCount}</span>}
   </a>;
 
-  return <PageActionsContext.Provider value={actionsTarget}><div className={`studio-shell ${isCollapsed?'sidebar-collapsed':''} ${narrow&&drawerOpen?'navigation-open':''}`}>
+  return <PageActionsContext.Provider value={actionsTarget}><div className={`studio-shell ${active==='overview'?'home-theme':''} ${isCollapsed?'sidebar-collapsed':''} ${narrow&&drawerOpen?'navigation-open':''}`}>
     {narrow&&drawerOpen&&<button type="button" className="nav-backdrop" aria-label="关闭导航遮罩" tabIndex={-1} onClick={()=>setDrawerOpen(false)}/>}
     <aside ref={sidebar} className="studio-sidebar" id="studio-navigation" hidden={narrow&&!drawerOpen} role={narrow?'dialog':undefined} aria-modal={narrow&&drawerOpen?true:undefined} aria-label="工作空间导航">
       {narrow&&<Button className="navigation-close" variant="subtle icon-only" data-close-navigation aria-label="关闭导航" onClick={()=>setDrawerOpen(false)}><X size={18}/></Button>}

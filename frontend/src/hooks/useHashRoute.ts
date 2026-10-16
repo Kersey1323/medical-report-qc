@@ -1,11 +1,11 @@
 import {useEffect,useState} from 'react';
 import type {CheckKey} from '../api/types';
-export type Route={page:'overview'|'single'|'batch'|'review'|'settings'}|{page:'task';run_id:string}|{page:'report';run_id:string;run_report_id:string;branch:CheckKey}|{page:'review_task';run_id:string}|{page:'review_report';run_id:string;run_report_id:string;branch:CheckKey}|{page:'not_found'};
+export type Route={page:'home'|'overview'|'single'|'batch'|'review'|'settings'}|{page:'task';run_id:string}|{page:'report';run_id:string;run_report_id:string;branch:CheckKey}|{page:'review_task';run_id:string}|{page:'review_report';run_id:string;run_report_id:string;branch:CheckKey}|{page:'not_found'};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function parseRoute(hash:string):Route{
  const path=hash.replace(/^#\/?/,'').replace(/^\//,'');
- if(!path)return{page:'overview'};
- if(['overview','single','batch','review','settings'].includes(path))return{page:path as 'overview'};
+ if(!path)return{page:'home'};
+ if(['home','overview','single','batch','review','settings'].includes(path))return{page:path as 'overview'};
  const parts=path.split('/');
  if(parts[0]==='review'&&parts[1]==='runs'&&uuid.test(parts[2]||'')){
   if(parts.length===3)return{page:'review_task',run_id:parts[2]};
