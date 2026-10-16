@@ -82,3 +82,65 @@ def test_review_tasks_aggregate_before_pagination_and_respect_latest_generation(
     assert task['pending_results'] == 3
     assert task['filename'] is None
     assert all('module_results.outcome' not in sql for sql in statements)
+
+
+def test_review_reports_group_branches_before_pagination_and_keep_partial_reviews(factory):
+    app = create_app()
+    app.state.session_factory = factory
+    client = TestClient(app)
+    with factory.begin() as s:
+        task = QualityRun(checks=['csc', 'rag'], config_snapshot={})
+        other = QualityRun(checks=['csc'], config_snapshot={})
+        source = Report(description='按报告复核测试原文', diagnosis='测试诊断')
+        s.add_all([task, other, source])
+        s.flush()
+        run_id, other_id = task.id, other.id
+        ids, units = [], []
+        for i in range(22):
+            row = RunReport(run_id=run_id, report_id=source.id, original_row=i + 2)
+            s.add(row)
+            s.flush()
+            ids.append(row.id)
+            pair = []
+            for branch in ['csc', 'rag']:
+                m = ModuleResult(run_report_id=row.id, branch=branch, status='succeeded',
+                                 finding='issue' if i < 21 else 'no_issue')
+                s.add(m)
+                s.flush()
+                pair.append(m.id)
+            units.append(pair)
+        s.add(RunReport(run_id=run_id, report_id=None, invalid=True, original_row=24))
+    path = f'/api/v1/reviews/tasks/{run_id}/reports'
+    first = client.get(path).json()['data']
+    assert first['total'] == 21
+    assert [r['id'] for r in first['items']] == ids[:20]
+    assert first['items'][0]['pending_branches'] == ['csc', 'rag']
+    assert first['items'][0]['pending_results'] == 2
+    second = client.get(path, params={'page': 2}).json()['data']
+    assert [r['id'] for r in second['items']] == [ids[20]]
+    assert client.get(f'/api/v1/reviews/tasks/{other_id}/reports').json()['data']['total'] == 0
+
+    def review(mid, kind, revision=0):
+        response = client.post('/api/v1/reviews', json={
+            'module_result_id': mid, 'generation': 1, 'expected_revision': revision,
+            'type': kind,
+        })
+        assert response.json()['status'] == 'success'
+
+    review(units[0][0], 'accept')
+    partial = client.get(path).json()['data']
+    assert partial['total'] == 21
+    assert partial['items'][0]['pending_branches'] == ['rag']
+    review(units[0][1], 'defer')
+    assert client.get(path).json()['data']['items'][0]['pending_results'] == 1
+    review(units[0][1], 'reject', 1)
+    completed = client.get(path).json()['data']
+    assert completed['total'] == 20
+    assert ids[0] not in [r['id'] for r in completed['items']]
+    all_reports = client.get(path, params={'review_state': 'all'}).json()['data']
+    assert all_reports['total'] == 22
+    assert all_reports['items'][0]['id'] == ids[0]
+    assert all_reports['items'][0]['pending_results'] == 0
+    with factory.begin() as s:
+        s.get(ModuleResult, units[0][0]).generation = 2
+    assert client.get(path).json()['data']['items'][0]['pending_branches'] == ['csc']

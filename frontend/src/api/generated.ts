@@ -243,6 +243,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reviews/tasks/{run_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reports */
+        get: operations["reports_api_v1_reviews_tasks__run_id__reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs": {
         parameters: {
             query?: never;
@@ -304,6 +321,23 @@ export interface paths {
         };
         /** Report List */
         get: operations["report_list_api_v1_runs__id__reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/runs/{id}/reports/{report_id}/navigation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Report Navigation */
+        get: operations["report_navigation_api_v1_runs__id__reports__report_id__navigation_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -503,6 +537,23 @@ export interface components {
              */
             status: "success";
         };
+        /** ApiSuccess[PageDTO[ReviewReportDTO]] */
+        ApiSuccess_PageDTO_ReviewReportDTO__: {
+            data: components["schemas"]["PageDTO_ReviewReportDTO_"];
+            /** Detail */
+            detail?: null;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Status
+             * @default success
+             * @constant
+             */
+            status: "success";
+        };
         /** ApiSuccess[PageDTO[ReviewTaskDTO]] */
         ApiSuccess_PageDTO_ReviewTaskDTO__: {
             data: components["schemas"]["PageDTO_ReviewTaskDTO_"];
@@ -557,6 +608,23 @@ export interface components {
         /** ApiSuccess[ReportDTO] */
         ApiSuccess_ReportDTO_: {
             data: components["schemas"]["ReportDTO"];
+            /** Detail */
+            detail?: null;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Status
+             * @default success
+             * @constant
+             */
+            status: "success";
+        };
+        /** ApiSuccess[ReportNavigationDTO] */
+        ApiSuccess_ReportNavigationDTO_: {
+            data: components["schemas"]["ReportNavigationDTO"];
             /** Detail */
             detail?: null;
             /**
@@ -930,6 +998,17 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** PageDTO[ReviewReportDTO] */
+        PageDTO_ReviewReportDTO_: {
+            /** Items */
+            items: components["schemas"]["ReviewReportDTO"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
         /** PageDTO[ReviewTaskDTO] */
         PageDTO_ReviewTaskDTO_: {
             /** Items */
@@ -993,6 +1072,17 @@ export interface components {
             id: string;
             /** Original Row */
             original_row: number | null;
+        };
+        /** ReportNavigationDTO */
+        ReportNavigationDTO: {
+            /** Next Run Report Id */
+            next_run_report_id: string | null;
+            /** Position */
+            position: number;
+            /** Previous Run Report Id */
+            previous_run_report_id: string | null;
+            /** Total */
+            total: number;
         };
         /** ResultDTO */
         ResultDTO: {
@@ -1080,6 +1170,43 @@ export interface components {
              */
             type: "accept" | "reject" | "edit" | "defer";
         };
+        /** ReviewReportDTO */
+        ReviewReportDTO: {
+            /** Anomaly */
+            anomaly: string;
+            /** Completeness */
+            completeness: string;
+            /** Description */
+            description: string;
+            /** Diagnosis */
+            diagnosis: string;
+            /** Errors */
+            errors: {
+                [key: string]: unknown;
+            }[];
+            /** Extra Fields */
+            extra_fields: {
+                [key: string]: unknown;
+            };
+            /** Id */
+            id: string;
+            /** Invalid */
+            invalid: boolean;
+            /** Original Row */
+            original_row: number | null;
+            /** Pending Branches */
+            pending_branches: ("diagnosis" | "csc" | "cgec" | "rag")[];
+            /** Pending Results */
+            pending_results: number;
+            /** Report Id */
+            report_id: string | null;
+            /** Results */
+            results: {
+                [key: string]: components["schemas"]["UnitSummary"];
+            };
+            /** Run Id */
+            run_id: string;
+        };
         /** ReviewTaskDTO */
         ReviewTaskDTO: {
             /** Created At */
@@ -1123,6 +1250,8 @@ export interface components {
             counts: components["schemas"]["Counts"];
             /** Created At */
             created_at: string;
+            /** Filename */
+            filename?: string | null;
             /** Finished At */
             finished_at: string | null;
             /** Id */
@@ -1578,12 +1707,40 @@ export interface operations {
             };
         };
     };
+    reports_api_v1_reviews_tasks__run_id__reports_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+                review_state?: string;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiSuccess_PageDTO_ReviewReportDTO__"] | components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     listing_api_v1_runs_get: {
         parameters: {
             query?: {
                 page?: number;
                 page_size?: number;
                 status?: string | null;
+                q?: string;
+                order?: string;
             };
             header?: never;
             path?: never;
@@ -1694,6 +1851,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiSuccess_PageDTO_RunReportDTO__"] | components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    report_navigation_api_v1_runs__id__reports__report_id__navigation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiSuccess_ReportNavigationDTO_"] | components["schemas"]["ApiErrorResponse"];
                 };
             };
         };

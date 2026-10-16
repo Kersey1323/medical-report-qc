@@ -172,6 +172,10 @@ def summary(s):
             .select_from(ModuleResult)
             .where(pending_review_condition())
         ),
+        "review_by_branch": dict(s.execute(
+            select(ModuleResult.branch, func.count())
+            .where(pending_review_condition()).group_by(ModuleResult.branch)
+        ).all()),
         "running_runs": s.scalar(
             select(func.count())
             .select_from(QualityRun)

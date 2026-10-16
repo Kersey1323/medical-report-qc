@@ -1,0 +1,280 @@
+{
+  "checkedAt": "2026-10-16T03:44:57.888Z",
+  "checks": [
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "overview",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "single",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "batch",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "task",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "report",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "review",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "settings",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1280,
+      "route": "components",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "overview",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "single",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "batch",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "task",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "report",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "review",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "settings",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1440,
+      "route": "components",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "overview",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "single",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "batch",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "task",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "report",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "review",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "settings",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "desktop-layout",
+      "width": 1920,
+      "route": "components",
+      "overflow": false,
+      "mainOverflow": false,
+      "headerHeight": 58,
+      "headerOverflow": false
+    },
+    {
+      "name": "sidebar-toggle",
+      "passed": true
+    },
+    {
+      "name": "form-validation-and-demo-submit",
+      "passed": true
+    },
+    {
+      "name": "task-filter-search-empty",
+      "passed": true
+    },
+    {
+      "name": "import-mapping-demo",
+      "passed": true
+    },
+    {
+      "name": "report-branch",
+      "branch": "diagnosis",
+      "passed": true
+    },
+    {
+      "name": "report-branch",
+      "branch": "csc",
+      "passed": true
+    },
+    {
+      "name": "report-branch",
+      "branch": "cgec",
+      "passed": true
+    },
+    {
+      "name": "report-branch",
+      "branch": "rag",
+      "passed": true
+    },
+    {
+      "name": "ten-full-evidence-reports-and-dismiss",
+      "passed": true
+    },
+    {
+      "name": "task-review-decision-edit-and-pagination",
+      "passed": true
+    },
+    {
+      "name": "error-details-and-source-references",
+      "passed": true
+    },
+    {
+      "name": "branch-specific-source-highlights",
+      "passed": true
+    },
+    {
+      "name": "import-step-focus-restoration",
+      "passed": true
+    }
+  ],
+  "scriptErrors": [],
+  "externalRequests": [],
+  "note": "Standalone HTML prototype only. No production APIs or real model execution."
+}

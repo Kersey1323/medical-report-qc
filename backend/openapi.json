@@ -141,6 +141,34 @@
         "title": "ApiSuccess[PageDTO[ReviewDTO]]",
         "type": "object"
       },
+      "ApiSuccess_PageDTO_ReviewReportDTO__": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageDTO_ReviewReportDTO_"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "null"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "status": {
+            "const": "success",
+            "default": "success",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ],
+        "title": "ApiSuccess[PageDTO[ReviewReportDTO]]",
+        "type": "object"
+      },
       "ApiSuccess_PageDTO_ReviewTaskDTO__": {
         "properties": {
           "data": {
@@ -251,6 +279,34 @@
           "request_id"
         ],
         "title": "ApiSuccess[ReportDTO]",
+        "type": "object"
+      },
+      "ApiSuccess_ReportNavigationDTO_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ReportNavigationDTO"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "null"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "status": {
+            "const": "success",
+            "default": "success",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ],
+        "title": "ApiSuccess[ReportNavigationDTO]",
         "type": "object"
       },
       "ApiSuccess_ResultDTO_": {
@@ -1191,6 +1247,37 @@
         "title": "PageDTO[ReviewDTO]",
         "type": "object"
       },
+      "PageDTO_ReviewReportDTO_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewReportDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "PageDTO[ReviewReportDTO]",
+        "type": "object"
+      },
       "PageDTO_ReviewTaskDTO_": {
         "properties": {
           "items": {
@@ -1354,6 +1441,48 @@
           "created_at"
         ],
         "title": "ReportDTO",
+        "type": "object"
+      },
+      "ReportNavigationDTO": {
+        "properties": {
+          "next_run_report_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Run Report Id"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "previous_run_report_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Run Report Id"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "previous_run_report_id",
+          "next_run_report_id",
+          "position",
+          "total"
+        ],
+        "title": "ReportNavigationDTO",
         "type": "object"
       },
       "ResultDTO": {
@@ -1606,6 +1735,123 @@
         "title": "ReviewDTO",
         "type": "object"
       },
+      "ReviewReportDTO": {
+        "properties": {
+          "anomaly": {
+            "title": "Anomaly",
+            "type": "string"
+          },
+          "completeness": {
+            "title": "Completeness",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "diagnosis": {
+            "title": "Diagnosis",
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "extra_fields": {
+            "additionalProperties": true,
+            "title": "Extra Fields",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "invalid": {
+            "title": "Invalid",
+            "type": "boolean"
+          },
+          "original_row": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Row"
+          },
+          "pending_branches": {
+            "items": {
+              "enum": [
+                "diagnosis",
+                "csc",
+                "cgec",
+                "rag"
+              ],
+              "type": "string"
+            },
+            "title": "Pending Branches",
+            "type": "array"
+          },
+          "pending_results": {
+            "title": "Pending Results",
+            "type": "integer"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "results": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/UnitSummary"
+            },
+            "propertyNames": {
+              "enum": [
+                "diagnosis",
+                "csc",
+                "cgec",
+                "rag"
+              ]
+            },
+            "title": "Results",
+            "type": "object"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "run_id",
+          "report_id",
+          "original_row",
+          "description",
+          "diagnosis",
+          "extra_fields",
+          "errors",
+          "invalid",
+          "results",
+          "completeness",
+          "anomaly",
+          "pending_results",
+          "pending_branches"
+        ],
+        "title": "ReviewReportDTO",
+        "type": "object"
+      },
       "ReviewTaskDTO": {
         "properties": {
           "created_at": {
@@ -1739,6 +1985,17 @@
           "created_at": {
             "title": "Created At",
             "type": "string"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
           },
           "finished_at": {
             "anyOf": [
@@ -2781,6 +3038,78 @@
         "summary": "Tasks"
       }
     },
+    "/api/v1/reviews/tasks/{run_id}/reports": {
+      "get": {
+        "operationId": "reports_api_v1_reviews_tasks__run_id__reports_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "review_state",
+            "required": false,
+            "schema": {
+              "default": "pending",
+              "pattern": "^(pending|all)$",
+              "title": "Review State",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiSuccess_PageDTO_ReviewReportDTO__"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiErrorResponse"
+                    }
+                  ],
+                  "title": "Response Reports Api V1 Reviews Tasks  Run Id  Reports Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Reports"
+      }
+    },
     "/api/v1/runs": {
       "get": {
         "operationId": "listing_api_v1_runs_get",
@@ -2822,6 +3151,28 @@
                 }
               ],
               "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 200,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "default": "newest",
+              "pattern": "^(newest|oldest)$",
+              "title": "Order",
+              "type": "string"
             }
           }
         ],
@@ -3066,6 +3417,54 @@
           }
         },
         "summary": "Report List"
+      }
+    },
+    "/api/v1/runs/{id}/reports/{report_id}/navigation": {
+      "get": {
+        "operationId": "report_navigation_api_v1_runs__id__reports__report_id__navigation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Report Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiSuccess_ReportNavigationDTO_"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiErrorResponse"
+                    }
+                  ],
+                  "title": "Response Report Navigation Api V1 Runs  Id  Reports  Report Id  Navigation Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Report Navigation"
       }
     },
     "/api/v1/runs/{id}/retry-failed": {

@@ -40,6 +40,14 @@ class RunDTO(BaseModel):
     started_at: str | None
     finished_at: str | None
     cancel_requested: bool
+    filename: str | None = None
+
+
+class ReportNavigationDTO(BaseModel):
+    previous_run_report_id: str | None
+    next_run_report_id: str | None
+    position: int
+    total: int
 
 
 class UnitSummary(BaseModel):
@@ -64,6 +72,11 @@ class RunReportDTO(BaseModel):
     results: dict[Branch, UnitSummary]
     completeness: str
     anomaly: str
+
+
+class ReviewReportDTO(RunReportDTO):
+    pending_results: int
+    pending_branches: list[Branch]
 
 
 class ReviewDTO(BaseModel):

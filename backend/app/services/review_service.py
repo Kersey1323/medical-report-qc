@@ -132,3 +132,43 @@ def review_tasks(s, page_number=1, page_size=20):
         "page": page_number,
         "page_size": page_size,
     }
+
+
+def review_reports(s, run_id, page_number=1, page_size=20, review_state="pending"):
+    """Paginate reports, not suggestions; multiple pending branches share one row."""
+    from app.services.run_service import report_order, report_rows
+
+    require(s, QualityRun, run_id)
+    pending = (
+        select(ModuleResult.run_report_id, func.count().label("pending_results"))
+        .join(RunReport, RunReport.id == ModuleResult.run_report_id)
+        .where(RunReport.run_id == run_id, pending_review_condition())
+        .group_by(ModuleResult.run_report_id)
+        .subquery()
+    )
+    query = (
+        select(RunReport.id)
+        .outerjoin(pending, pending.c.run_report_id == RunReport.id)
+        .where(
+            RunReport.run_id == run_id,
+            RunReport.invalid.is_(False),
+            RunReport.report_id.is_not(None),
+        )
+    )
+    if review_state == "pending":
+        query = query.where(pending.c.pending_results > 0)
+    total = s.scalar(select(func.count()).select_from(query.subquery()))
+    ids = list(s.scalars(query.order_by(*report_order()).offset((page_number - 1) * page_size).limit(page_size)))
+    branches = {}
+    if ids:
+        for rid, branch in s.execute(
+            select(ModuleResult.run_report_id, ModuleResult.branch)
+            .where(ModuleResult.run_report_id.in_(ids), pending_review_condition())
+        ):
+            branches.setdefault(rid, []).append(branch)
+    order = ("diagnosis", "csc", "cgec", "rag")
+    items = []
+    for report in report_rows(s, run_id, ids):
+        pending_branches = [branch for branch in order if branch in branches.get(report["id"], [])]
+        items.append(report | {"pending_results": len(pending_branches), "pending_branches": pending_branches})
+    return {"items": items, "total": total, "page": page_number, "page_size": page_size}

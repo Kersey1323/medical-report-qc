@@ -1,10 +1,11 @@
 import {apiRequest,post} from './client';
-import type {ReportDTO,RunDTO,RunReport,CheckKey,Page,ResultDTO,ReviewDTO,ReviewTaskDTO,ReviewType,ImportDTO,ArtifactDTO,PreflightDTO,Summary,EvidenceSnapshot} from './types';
+import type {ReportDTO,RunDTO,RunReport,CheckKey,Page,ResultDTO,ReviewDTO,ReviewTaskDTO,ReviewReportDTO,ReviewType,ImportDTO,ArtifactDTO,PreflightDTO,Summary,EvidenceSnapshot} from './types';
 export const createReport=(data:{description:string;diagnosis:string})=>post<ReportDTO>('/reports',data);
 export const createRun=(data:{report_ids?:string[];import_id?:string;checks:CheckKey[]})=>post<RunDTO>('/runs',data);
 export const startRun=(id:string)=>post<RunDTO>(`/runs/${id}/start`);
 export const getRun=(id:string,signal?:AbortSignal)=>apiRequest<RunDTO>(`/runs/${id}`,{signal});
-export const listRuns=(page=1,signal?:AbortSignal)=>apiRequest<Page<RunDTO>>(`/runs?page=${page}`,{signal});
+export const listRuns=(page=1,signal?:AbortSignal,filter='')=>apiRequest<Page<RunDTO>>(`/runs?page=${page}${filter}`,{signal});
+export const getReportNavigation=(runId:string,reportId:string,signal?:AbortSignal)=>apiRequest<{previous_run_report_id:string|null;next_run_report_id:string|null;position:number;total:number}>(`/runs/${runId}/reports/${reportId}/navigation`,{signal});
 export const getRunReports=(id:string,page=1,signal?:AbortSignal,filter='')=>apiRequest<Page<RunReport>>(`/runs/${id}/reports?page=${page}${filter}`,{signal});
 export const cancelRun=(id:string)=>post<RunDTO>(`/runs/${id}/cancel`);
 export const retryFailed=(id:string,revision:number,ids?:string[])=>post<RunDTO>(`/runs/${id}/retry-failed`,{expected_revision:revision,...(ids?{module_result_ids:ids}:{})});
@@ -22,3 +23,5 @@ export const getImport=(id:string,signal?:AbortSignal)=>apiRequest<ImportDTO>(`/
 export const confirmImport=(id:string,description_column:string,diagnosis_column:string|null,checks:CheckKey[])=>post<{report_ids:string[];invalid_rows:unknown[]}>(`/imports/${id}/confirm`,{description_column,diagnosis_column,checks});
 export const requestExport=(run_id:string)=>post<ArtifactDTO>('/exports',{run_id});
 export const getExport=(id:string,signal?:AbortSignal)=>apiRequest<ArtifactDTO>(`/exports/${id}`,{signal});
+
+export const getReviewReports=(runId:string,page=1,reviewState:'pending'|'all'='pending',signal?:AbortSignal)=>apiRequest<Page<ReviewReportDTO>>(`/reviews/tasks/${runId}/reports?page=${page}&review_state=${reviewState}`,{signal});

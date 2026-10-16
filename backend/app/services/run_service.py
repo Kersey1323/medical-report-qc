@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, tuple_
 from app.db.models import *
 from app.domain.results import BranchOutcome
 from app.domain.state import summarize_report, summarize_run
@@ -17,13 +17,36 @@ def result_summary(m):
     }
 
 
+def report_order():
+    # Imported rows retain their file order; manual reports use stable creation order.
+    return (func.coalesce(RunReport.original_row, 2147483647), RunReport.created_at, RunReport.id)
+
+
+def report_navigation(s, run_id, report_id):
+    require(s, QualityRun, run_id)
+    row = require(s, RunReport, report_id)
+    if row.run_id != run_id:
+        raise fail("resource_not_found", "报告不属于当前任务", "run.navigation")
+    order = report_order()
+    cursor = (row.original_row if row.original_row is not None else 2147483647, row.created_at, row.id)
+    valid = (RunReport.run_id == run_id, RunReport.invalid.is_(False), RunReport.report_id.is_not(None))
+    next_id = s.scalar(select(RunReport.id).where(*valid, tuple_(*order) > cursor).order_by(*order).limit(1))
+    previous_id = s.scalar(select(RunReport.id).where(*valid, tuple_(*order) < cursor).order_by(*(column.desc() for column in order)).limit(1))
+    return {
+        "previous_run_report_id": previous_id,
+        "next_run_report_id": next_id,
+        "position": s.scalar(select(func.count()).select_from(RunReport).where(*valid, tuple_(*order) <= cursor)),
+        "total": s.scalar(select(func.count()).select_from(RunReport).where(*valid)),
+    }
+
+
 def report_rows(s, id, selected_ids=None):
     from sqlalchemy.orm import load_only
 
     query = (
         select(RunReport)
         .where(RunReport.run_id == id)
-        .order_by(RunReport.created_at, RunReport.id)
+        .order_by(*report_order())
     )
     if selected_ids is not None:
         query = query.where(RunReport.id.in_(selected_ids))
@@ -96,7 +119,7 @@ def report_page(
         )
         .outerjoin(ModuleResult, ModuleResult.run_report_id == RunReport.id)
         .where(RunReport.run_id == id)
-        .order_by(RunReport.created_at, RunReport.id)
+        .order_by(*report_order())
     )
     if run_report_id:
         query = query.where(RunReport.id == str(run_report_id))
@@ -172,6 +195,7 @@ def get_run(s, id):
         "started_at": stamp(q.started_at),
         "finished_at": stamp(q.finished_at),
         "cancel_requested": q.cancel_requested,
+        "filename": s.scalar(select(Import.filename).where(Import.id == q.import_id)) if q.import_id else None,
     }
 
 

@@ -21,8 +21,8 @@ export function StudioShell({active,children,pendingCount,taskCount,onHelp}:{act
   const sidebar=useRef<HTMLElement>(null);
   const menuButton=useRef<HTMLButtonElement>(null);
   const isCollapsed=collapsed&&!narrow;
-  const activeName=active==='report'?'报告详情':active==='task'?'任务详情':[...nav,settings].find(item=>item.key===active)?.name||'工作台';
-  const activeNav=active==='report'||active==='task'?'batch':active;
+  const activeName=active==='review_report'?'报告复核':active==='review_task'?'任务报告复核':active==='report'?'报告详情':active==='task'?'任务详情':[...nav,settings].find(item=>item.key===active)?.name||'工作台';
+  const activeNav=active.startsWith('review')?'review':active==='report'||active==='task'?'batch':active;
 
   useEffect(()=>{
     const media=window.matchMedia(narrowQuery);

@@ -6,7 +6,7 @@ from app.schemas.requests import ReviewCreate
 from app.core.exceptions import AppError
 from app.core.config import Settings
 from app.db.models import ModuleResult, TaskOutbox
-from sqlalchemy import select
+from sqlalchemy import select, func
 from openpyxl import load_workbook
 import pytest
 
@@ -58,13 +58,20 @@ def test_outbox_failure_retained(factory, seeded):
         s.add(b)
         s.flush()
         id = b.id
+        # This persistent test database can contain outboxes from earlier runs.
+        # Include the new fixture in both passes instead of testing only the oldest 100.
+        batch_size = s.scalar(select(func.count()).select_from(TaskOutbox))
+
+    failed_targets = []
 
     def bad(*a):
+        failed_targets.append(a)
         raise ConnectionError("broker down")
 
-    publish_outbox(factory, publish=bad)
+    publish_outbox(factory, publish=bad, limit=batch_size)
+    assert ("qc", seeded[2]) in failed_targets
     with factory() as s:
         assert s.get(TaskOutbox, id).published_at is None
     delivered = []
-    publish_outbox(factory, publish=lambda k, i: delivered.append((k, i)))
+    publish_outbox(factory, publish=lambda k, i: delivered.append((k, i)), limit=batch_size)
     assert ("qc", seeded[2]) in delivered

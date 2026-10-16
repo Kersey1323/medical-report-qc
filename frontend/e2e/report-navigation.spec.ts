@@ -1,0 +1,53 @@
+import {test,expect} from '@playwright/test';
+
+test('report navigation resets to first enabled check and accepted decisions cannot be duplicated',async({page})=>{
+ const reportIds=[];
+ for(let i=0;i<3;i++){
+  const response=await page.request.post('/api/v1/reports',{data:{description:`导航测试合成报告 ${i}：两肺血观束清晰。`,diagnosis:'合成诊断'}});
+  reportIds.push((await response.json()).data.id);
+ }
+ const created=await page.request.post('/api/v1/runs',{data:{report_ids:reportIds,checks:['csc','rag']}});
+ const run=(await created.json()).data;
+ await page.request.post(`/api/v1/runs/${run.id}/start`);
+ await expect.poll(async()=>((await (await page.request.get(`/api/v1/runs/${run.id}`)).json()).data.status)).toBe('completed');
+ const rows=(await (await page.request.get(`/api/v1/runs/${run.id}/reports`)).json()).data.items;
+ await page.goto(`/#/runs/${run.id}/reports/${rows[0].id}/rag`);
+ await page.getByRole('button',{name:'下一条',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`/reports/${rows[1].id}/csc$`));
+ await page.getByRole('button',{name:'下一条',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`/reports/${rows[2].id}/csc$`));
+ await expect(page.getByRole('button',{name:'已是最后一份'})).toBeDisabled();
+ await page.getByRole('button',{name:'检索增强定位',exact:true}).click();
+ await page.getByRole('button',{name:'上一条',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`/reports/${rows[1].id}/csc$`));
+ await page.goto('/#review');
+ await page.getByRole('button',{name:`复核任务 ${run.id.slice(0,8)}`}).click();
+ const reports=page.getByRole('table',{name:'任务复核报告'});
+ await reports.getByRole('button',{name:`复核报告 ${rows[0].id.slice(0,8)}`,exact:true}).click();
+ await expect(page.getByRole('link',{name:'人工复核',exact:true})).toHaveAttribute('aria-current','page');
+ await page.getByRole('button',{name:'接受建议',exact:true}).click();
+ await expect(page.locator('.review-bar')).toContainText('已接受');
+ await expect(page.getByRole('button',{name:'已接受',exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'上一条',exact:true})).toBeDisabled();
+ await page.reload();
+ await expect(page.getByRole('button',{name:'已接受',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'下一条',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`/review/runs/${run.id}/reports/${rows[1].id}/csc$`));
+ await expect(page.locator('.report-navigation')).toContainText('2 / 3 份');
+ await page.getByRole('button',{name:'检索增强定位',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`/review/runs/${run.id}/reports/${rows[1].id}/rag$`));
+ await page.reload();await expect(page.locator('.result-pane h2')).toHaveText('检索增强定位');
+ await page.getByRole('button',{name:'上一条',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`/review/runs/${run.id}/reports/${rows[0].id}/csc$`));
+ await expect(page.getByRole('button',{name:'已接受',exact:true})).toBeDisabled();
+ await page.screenshot({path:test.info().outputPath('report-review-accepted.png')});
+ await page.getByRole('button',{name:'返回报告列表'}).click();
+ await expect(reports).toBeVisible();
+ await page.goto(`/#/runs/${run.id}`);
+ await page.getByRole('button',{name:`复核异常报告 ${rows[1].id.slice(0,8)}`}).click();
+ await expect(page).toHaveURL(new RegExp(`/review/runs/${run.id}/reports/${rows[1].id}/csc$`));
+ await expect(page.locator('.review-bar')).toBeVisible();
+ await page.goto(`/#/runs/${run.id}`);
+ await page.getByRole('button',{name:'查看检索结果'}).nth(1).click();
+ await expect(page).toHaveURL(new RegExp(`/review/runs/${run.id}/reports/${rows[1].id}/rag$`));
+});

@@ -1,7 +1,7 @@
-from app.schemas.dto import RunDTO, RunReportDTO, PageDTO
+from app.schemas.dto import RunDTO, RunReportDTO, ReportNavigationDTO, PageDTO
 from uuid import UUID
 from fastapi import APIRouter, Request, Depends, Query
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from app.api.dependencies import session
 from app.api.envelope import ok, RESPONSES
 from contracts.responses import ApiSuccess, ApiErrorResponse
@@ -10,7 +10,7 @@ from app.services import run_service as service
 from app.services import system_service
 from app.core.config import get_settings
 from app.services.common import page, require
-from app.db.models import QualityRun
+from app.db.models import QualityRun, Import
 
 router = APIRouter()
 
@@ -29,11 +29,17 @@ def listing(
     page_number: int = Query(1, alias="page", ge=1),
     page_size: int = Query(20, ge=1, le=100),
     status: str | None = None,
+    q: str = Query("", max_length=200),
+    order: str = Query("newest", pattern="^(newest|oldest)$"),
     s=Depends(session, scope="function"),
 ):
-    query = select(QualityRun).order_by(QualityRun.created_at.desc(), QualityRun.id)
+    query = select(QualityRun).outerjoin(Import, Import.id == QualityRun.import_id).order_by(
+        QualityRun.created_at.asc() if order == "oldest" else QualityRun.created_at.desc(), QualityRun.id
+    )
     if status:
         query = query.where(QualityRun.status == status)
+    if q.strip():
+        query = query.where(or_(QualityRun.id.contains(q.strip(), autoescape=True), Import.filename.contains(q.strip(), autoescape=True)))
     total = s.scalar(select(func.count()).select_from(query.order_by(None).subquery()))
     ids = list(s.scalars(query.offset((page_number - 1) * page_size).limit(page_size)))
     return ok(
@@ -107,6 +113,14 @@ def retry(
             s, str(id), data.expected_revision, data.module_result_ids
         ),
     )
+
+
+@router.get(
+    "/runs/{id}/reports/{report_id}/navigation",
+    response_model=ApiSuccess[ReportNavigationDTO] | ApiErrorResponse,
+)
+def report_navigation(id: UUID, report_id: UUID, request: Request, s=Depends(session, scope="function")):
+    return ok(request, service.report_navigation(s, str(id), str(report_id)))
 
 
 @router.get(

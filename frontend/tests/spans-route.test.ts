@@ -9,3 +9,12 @@ it('keeps task and report identity',()=>{
  const route={page:'report' as const,run_id:'00000000-0000-4000-8000-000000000001',run_report_id:'00000000-0000-4000-8000-000000000002',branch:'rag' as const};
  expect(parseRoute(serializeRoute(route))).toEqual(route);expect(parseRoute('/runs/bad')).toEqual({page:'not_found'});
 });
+it('round-trips review task/report deep links and rejects malformed identities',()=>{
+ const run_id='00000000-0000-4000-8000-000000000001',run_report_id='00000000-0000-4000-8000-000000000002';
+ const task={page:'review_task' as const,run_id};
+ const report={page:'review_report' as const,run_id,run_report_id,branch:'csc' as const};
+ expect(parseRoute(serializeRoute(task))).toEqual(task);
+ expect(parseRoute(serializeRoute(report))).toEqual(report);
+ expect(parseRoute('/review/runs/bad')).toEqual({page:'not_found'});
+ expect(parseRoute(`/review/runs/${run_id}/reports/${run_report_id}/other`)).toEqual({page:'not_found'});
+});
